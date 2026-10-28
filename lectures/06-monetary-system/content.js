@@ -1,0 +1,596 @@
+const CARDS = [
+ ["Barter","Trading goods and services directly for other goods and services, without money.","Swapping a basket of eggs for a haircut."],
+ ["Double coincidence of wants","The rare case where each trader wants exactly what the other has.","The barber must want eggs, and you must want a haircut."],
+ ["Money","The set of assets people regularly use to buy goods and services from others.","Cash and checking balances. Not houses or stocks."],
+ ["Medium of exchange","Something buyers give to sellers to pay for goods and services.","Handing over $5 for a coffee."],
+ ["Unit of account","The yardstick people use to post prices and record debts.","A menu with prices in dollars."],
+ ["Store of value","Something people use to carry buying power from today into the future.","Keeping $100 to spend next month."],
+ ["Liquidity","How easily an asset can be turned into money you can spend.","Cash is perfectly liquid. A house is not."],
+ ["Commodity money","Money that is also a valuable good in itself.","Gold coins."],
+ ["Fiat money","Money with no value of its own. It is money because the government says so.","The U.S. dollar bill."],
+ ["Money stock","The total amount of money circulating in the economy.","Measured as M1 or M2."],
+ ["Currency","Paper bills and coins held by the public.","The cash in your wallet."],
+ ["Demand deposits","Bank balances you can use any time with a check or debit card.","Your checking account."],
+ ["M1","The narrow money measure: currency, checking deposits, traveler’s checks and other checkable deposits.","Money clearly used to pay for things."],
+ ["M2","The broad money measure: everything in M1 plus savings deposits, money market funds and small time deposits.","Always bigger than M1."],
+ ["Time deposit","Money left in a bank for a set time, with a penalty for taking it out early. Also called a CD.","A 6-month certificate of deposit."],
+ ["Federal Reserve","The central bank of the United States, often called the Fed.","Created in 1913."],
+ ["Central bank","An institution that oversees the banking system and controls the amount of money.","The Fed, the Bank of England."],
+ ["Board of Governors","The Fed’s 7 governors, each appointed for a 14-year term. One is the chair.","Long terms protect them from political pressure."],
+ ["FOMC","The Federal Open Market Committee. It sets monetary policy and meets about every six weeks.","12 people vote: 7 governors plus 5 bank presidents."],
+ ["Lender of last resort","The Fed’s role of lending to banks when no one else will.","Emergency loans during a banking panic."],
+ ["Monetary policy","The central bank’s decisions about the money supply.","Made by the FOMC."],
+ ["Reserves","Deposits a bank has received but not lent out.","Cash in the vault and deposits at the Fed."],
+ ["100-percent-reserve banking","A system where banks keep every deposit as reserves and lend nothing.","Banks do not change the money supply."],
+ ["Fractional-reserve banking","A system where banks keep only part of their deposits as reserves and lend the rest.","This is how banks create money."],
+ ["Reserve ratio","The fraction of deposits a bank keeps as reserves. Written R.","R = reserves ÷ deposits."],
+ ["Required reserves","The minimum reserves banks must hold by law.","Set by the Fed’s reserve requirement."],
+ ["Excess reserves","Reserves banks hold above the legal minimum.","Holding more makes the multiplier smaller."],
+ ["Money multiplier","How much money the banking system creates from each dollar of reserves. It equals 1 ÷ R.","R = 10% gives a multiplier of 10."],
+ ["T-account","A simple balance sheet. Assets on the left, liabilities on the right.","Reserves $10 and Loans $90 | Deposits $100."],
+ ["Open-market operations","The Fed buying or selling U.S. government bonds.","Buying bonds puts more money into the economy."],
+ ["Reserve requirements","Rules that set the minimum reserves banks must hold.","Raising them shrinks the money supply."],
+ ["Discount rate","The interest rate the Fed charges when it lends to banks.","Lowering it encourages banks to borrow."],
+ ["Federal funds rate","The interest rate banks charge each other for very short-term loans of reserves.","Overnight loans between banks."]
+];
+const CNOTE = {
+ "M1":"📘 Lecture definition. 🕒 Today: since 2020 the Fed also counts savings deposits in M1.",
+ "M2":"📘 Lecture definition. 🕒 Today: savings deposits now count in M1 too, so the gap between M1 and M2 is smaller.",
+ "Reserve ratio":"📘 Textbook model. 🕒 Today: banks still hold reserves, but the legal minimum has been 0% since March 2020.",
+ "Required reserves":"📘 Textbook model. 🕒 Today: the requirement has been 0% since March 2020, so required reserves are zero.",
+ "Excess reserves":"🕒 Today: with requirements at 0%, all the reserves banks hold count as excess.",
+ "Money multiplier":"📘 Textbook model. 🕒 Today: it shows how lending creates money, but it isn’t how the Fed manages money.",
+ "Fractional-reserve banking":"📘 Textbook model of how banks create money through lending.",
+ "100-percent-reserve banking":"📘 Textbook model, used for comparison. No real banking system works this way.",
+ "Reserve requirements":"📘 Lecture tool. 🕒 Today: set to 0% since March 26, 2020.",
+ "Open-market operations":"📘 Lecture: the main tool for changing the money supply. 🕒 Today: used mainly to keep reserves at an ‘ample’ level.",
+ "Discount rate":"🕒 Today: still in use. Discount-window loans back up banks as lender of last resort.",
+ "Federal funds rate":"🕒 Today: the FOMC sets a target range and steers it mainly through the interest it pays on reserves.",
+ "Monetary policy":"🕒 Today: set mainly as a target range for the federal funds rate."
+};
+
+const TB = new Set(["c5b","c6a","c6b","c7a","c7b","c8a","c8b","q11","q12","q13","q14","q15","q16","q17","q18","q19"]);
+const TODAY = {
+ c6a:"reserve requirements are 0%, so 1 ÷ R is a teaching model, not a description of today’s Fed.",
+ c6b:"reserve requirements are 0%, so 1 ÷ R is a teaching model, not a description of today’s Fed.",
+ q12:"reserve requirements are 0%, so 1 ÷ R is a teaching model, not a description of today’s Fed.",
+ q13:"reserve requirements are 0%, so 1 ÷ R is a teaching model, not a description of today’s Fed.",
+ q17:"reserve requirements have been 0% since March 2020.",
+ c8a:"the Fed steers interest rates mainly through the interest it pays on reserves; buying and selling securities keeps reserves ample.",
+ q16:"the Fed steers interest rates mainly through the interest it pays on reserves; buying and selling securities keeps reserves ample.",
+ c8b:"discount-window loans still exist, mainly as a backstop for banks.",
+ q18:"discount-window loans still exist, mainly as a backstop for banks."
+};
+/* ================= graphics ================= */
+
+/* 1. Barter vs money */
+function figBarter(el){
+  const T = [["Baker","🍞","bread","shoes"],["Shoemaker","👞","shoes","fish"],["Fisher","🐟","fish","bread"]];
+  const steps = [
+    {on:[], tx:[], cap:"Three traders. Each has one thing and wants something else. Can they trade?"},
+    {on:[0,1], tx:[["no","Baker offers 🍞 bread to the Shoemaker.","“No thanks. I want fish.”"]], cap:"Barter fails. The shoemaker doesn’t want bread, so there is no <b>double coincidence of wants</b>."},
+    {on:[0,2], tx:[["no","Baker offers 🍞 bread to the Shoemaker.","Refused."],["ok","Fisher pays the Baker $5 for 🍞 bread.","The fisher wants bread, so this works."]], cap:"Now add money. The fisher wants bread, so pays the baker <b>$5</b>."},
+    {on:[0,1,2], tx:[["ok","Fisher pays the Baker $5 for 🍞 bread.",""],["ok","Baker pays the Shoemaker $5 for 👞 shoes.",""],["ok","Shoemaker pays the Fisher $5 for 🐟 fish.",""]], cap:"Everyone gets what they want. The same <b>$5</b> went around the circle. Money is the go-between: its job as a <b>medium of exchange</b>."}
+  ];
+  stepper(el, {title:"Why barter breaks down", sub:"Tap Next to step through.", n:() => steps.length, draw:(i, st) => {
+    const s = steps[i];
+    st.innerHTML = `<div class="traders">${T.map((t,k) => `<div class="trader ${s.on.includes(k) ? "on" : ""}"><div class="em">${t[1]}</div><b>${t[0]}</b><small>has ${t[2]}<br>wants ${t[3]}</small></div>`).join("")}</div>` +
+      s.tx.map((x,k) => `<div class="tx tx-${x[0]} ${k === s.tx.length-1 ? "pop" : ""}"><span class="mark">${x[0] === "ok" ? "✓" : "✕"}</span><span>${x[1]}${x[2] ? `<br><small class="muted">${x[2]}</small>` : ""}</span></div>`).join("");
+    return s.cap;
+  }});
+}
+
+/* 2. Sort scenarios into money's three jobs */
+function figJobs(el){
+  const J = ["Medium of exchange","Unit of account","Store of value"];
+  const SC = [
+    ["You pay $3 for a coffee.",0,"Money is changing hands to pay. That’s the medium of exchange."],
+    ["A laptop is priced at $899.",1,"Nothing is paid yet. The dollars measure the price, so money is the unit of account."],
+    ["You keep birthday cash to buy a bike next summer.",2,"You’re carrying buying power into the future: store of value."],
+    ["You compare two jobs: $18 an hour vs $20 an hour.",1,"Dollars let you compare values on one yardstick: unit of account."],
+    ["You tap your debit card at the pharmacy.",0,"Your checking balance pays the seller: medium of exchange."],
+    ["You keep $50 in a drawer for emergencies.",2,"Saved for later use: store of value. (It earns no interest, though.)"]
+  ];
+  let k = 0, right = 0, answered = false;
+  el.innerHTML = `<div class="figt">Sort it: which job is money doing?</div><p class="figsub">Six everyday moments. Pick the job for each.</p><div class="sbody"></div>`;
+  const body = el.querySelector(".sbody");
+  const draw = () => {
+    if (k >= SC.length){
+      body.innerHTML = `<div class="scen pop"><b>${right} of ${SC.length}</b> on the first try.<br><span class="small muted">Rule of thumb: <b>paying</b> = medium of exchange, <b>pricing or comparing</b> = unit of account, <b>saving for later</b> = store of value.</span></div><button class="btn ghost" type="button">Sort again</button>`;
+      body.querySelector("button").onclick = () => { k = 0; right = 0; draw(); }; return;
+    }
+    answered = false;
+    body.innerHTML = `<div class="tally"><span>Moment ${k+1} of ${SC.length}</span><span>${right} right</span></div><div class="scen pop">${SC[k][0]}</div>
+      <div class="choices three">${J.map((j,i) => `<button type="button" class="choice" data-i="${i}">${j}</button>`).join("")}</div><div class="fb"></div>`;
+    body.querySelectorAll(".choice").forEach(b => b.onclick = () => {
+      const i = +b.dataset.i, ok = i === SC[k][1];
+      if (ok){
+        if (!answered) right++; body.querySelector('.tally span:last-child').textContent = right + ' right';
+        body.querySelectorAll(".choice").forEach(x => x.disabled = true); b.classList.add("right");
+        body.querySelector(".fb").innerHTML = `<div class="why"><b class="ok">Yes.</b> ${SC[k][2]}</div>`;
+        const nb = h("button","btn","Next moment"); nb.type = "button"; nb.style.marginTop = "10px"; nb.onclick = () => { k++; draw(); };
+        body.appendChild(nb);
+      } else {
+        b.classList.add("wrong"); b.disabled = true;
+        const why = i === 0 ? "Is anyone actually paying right now?" : i === 1 ? "Is money just measuring a price here, or doing something else?" : "Is anything being kept for the future?";
+        body.querySelector(".fb").innerHTML = `<div class="why"><b class="no">Not this one.</b> ${why} Try again.</div>`;
+      }
+      answered = true;
+    });
+  };
+  draw();
+}
+
+/* 3. Liquidity ladder */
+function figLiquidity(el){
+  const L = [
+    ["Cash in wallet","Instantly",2,"Already money. Perfectly liquid, but earns no interest."],
+    ["Checking account","Seconds (debit card)",6,"Spend it right away. Earns little or no interest."],
+    ["Savings account","Minutes (transfer)",12,"Move it to checking, then spend. Earns a little interest."],
+    ["Stocks","1–2 days to settle",32,"Easy to sell, but the price may be down the day you need cash."],
+    ["Government bond","A day or more",38,"Sells easily and pays interest, but you must sell before spending."],
+    ["Your car","Days to weeks",70,"Need a buyer, may sell below its value. Low liquidity."],
+    ["A house","Months, plus fees",100,"Takes months and costs thousands in fees. Least liquid."]
+  ];
+  let sel = -1;
+  el.innerHTML = `<div class="figt">You need $500 by tonight</div><p class="figsub">How long to turn each one into spendable cash? Tap a row.</p><div class="ladder"></div><div class="ends"><span>Most liquid</span><span>Least liquid</span></div><p class="cap" aria-live="polite">Tap any row to see why it sits where it does.</p>`;
+  const lad = el.querySelector(".ladder"), cap = el.querySelector(".cap");
+  L.forEach((r, i) => {
+    const b = h("button","rung",`<span class="nm">${r[0]}</span><span><span class="tbar" style="display:block;width:0"></span><span class="tl">${r[1]}</span></span>`); b.type = "button";
+    b.onclick = () => { lad.querySelectorAll(".rung").forEach(x => x.classList.remove("sel")); b.classList.add("sel"); cap.innerHTML = `<b>${r[0]}:</b> ${r[3]}`; };
+    lad.appendChild(b);
+  });
+  const grow = () => lad.querySelectorAll(".tbar").forEach((t,i) => t.style.width = L[i][2] + "%");
+  if (RM || !("IntersectionObserver" in window)) grow();
+  else { const io = new IntersectionObserver(es => { if (es[0].isIntersecting){ grow(); io.disconnect(); } }); io.observe(el); }
+}
+
+/* 4. Sort assets into M1 / M2 / not money */
+function figMSort(el){
+  const IT = [
+    ["💵 Currency (bills, coins)","m1","It’s used directly to pay, so it’s in M1 (and therefore M2)."],
+    ["💳 Checking account balance","m1","A demand deposit. You can spend it instantly, so it’s M1."],
+    ["🧾 Traveler’s checks","m1","Accepted as payment, so they count in M1."],
+    ["🏦 Savings account","m2","Easy to move to checking, but not used to pay directly. The lecture puts it in M2 only."],
+    ["📈 Money market fund","m2","Highly liquid with limited check-writing: M2 only."],
+    ["📄 $5,000 six-month CD","m2","A small time deposit. Penalty to withdraw early, but short: M2 only."],
+    ["💳 Credit card limit","none","Not money. It’s a loan you repay later with money."],
+    ["📊 Shares of stock","none","Liquid, but you must sell them for money first. Not counted in M1 or M2."]
+  ];
+  let k = 0, right = 0, first = true;
+  el.innerHTML = `<div class="figt">Build M1 and M2</div><p class="figsub">Put each item where it belongs. Watch the boxes fill up.</p>
+    <div class="m2box"><div class="boxlbl">M2 <small>broad money</small></div>
+      <div class="m1box"><div class="boxlbl">M1 <small>money used to pay</small></div><div class="tokens" id="t-m1"></div></div>
+      <div class="tokens" id="t-m2"></div></div>
+    <div class="outbox"><div class="boxlbl" style="color:var(--wrong)">Not money</div><div class="tokens" id="t-none"></div></div>
+    <div class="sbody" style="margin-top:12px"></div>`;
+  const body = el.querySelector(".sbody");
+  const draw = () => {
+    if (k >= IT.length){
+      body.innerHTML = `<p class="cap pop"><b>${right} of ${IT.length}</b> on the first try. Notice: the M1 box sits <b>inside</b> M2, so M2 is always bigger.</p><button class="btn ghost" type="button">Sort again</button>`;
+      body.querySelector("button").onclick = () => { k = 0; right = 0; ["m1","m2","none"].forEach(z => el.querySelector("#t-"+z).innerHTML = ""); draw(); }; return;
+    }
+    first = true;
+    body.innerHTML = `<div class="tally"><span>Item ${k+1} of ${IT.length}</span><span>${right} right</span></div><div class="scen pop">${IT[k][0]}</div>
+      <div class="choices three"><button type="button" class="choice" data-z="m1">M1</button><button type="button" class="choice" data-z="m2">M2 only</button><button type="button" class="choice" data-z="none">Not money</button></div><div class="fb"></div>`;
+    body.querySelectorAll(".choice").forEach(b => b.onclick = () => {
+      const z = b.dataset.z, ok = z === IT[k][1];
+      if (ok){
+        if (first) right++; body.querySelector('.tally span:last-child').textContent = right + ' right';
+        body.querySelectorAll(".choice").forEach(x => x.disabled = true); b.classList.add("right");
+        el.querySelector("#t-"+z).appendChild(h("span","tok pop", IT[k][0]));
+        body.querySelector(".fb").innerHTML = `<div class="why"><b class="ok">Yes.</b> ${IT[k][2]}</div>`;
+        const nb = h("button","btn","Next item"); nb.type = "button"; nb.style.marginTop = "10px"; nb.onclick = () => { k++; draw(); };
+        body.appendChild(nb);
+      } else {
+        first = false; b.classList.add("wrong"); b.disabled = true;
+        const hint = z === "m1" ? "Can you pay a store with it directly, right now?" : z === "m2" ? "Is it used to pay directly (M1), or is it not money at all?" : "Is it a bank balance or cash you could spend soon?";
+        body.querySelector(".fb").innerHTML = `<div class="why"><b class="no">Not quite.</b> ${hint} Try again.</div>`;
+      }
+    });
+  };
+  draw();
+}
+
+/* 5. Fed structure with voting seats */
+function figFed(el){
+  el.innerHTML = `<div class="figt">Who runs the Fed, and who votes</div>
+    <div class="orgrow"><div class="node"><b>Board of Governors</b><small>7 governors, 14-year terms, one is chair</small></div><div class="node"><b>12 Reserve Banks</b><small>New York, Boston, Chicago, …</small></div></div>
+    <div class="arrow-d">↓ ↓</div>
+    <div class="node gold"><b>FOMC</b><small>meets about every 6 weeks</small>
+      <div class="seats" aria-label="12 voting seats: 7 governors and 5 bank presidents">${"<i class='gov'></i>".repeat(7)}<i class="pres">NY</i>${"<i class='pres'></i>".repeat(4)}</div>
+      <div class="legend"><span><i style="background:var(--note)"></i>7 governors</span><span><i style="background:var(--gold)"></i>5 bank presidents</span></div></div>
+    <div class="arrow-d">↓</div>
+    <div class="node"><b>Monetary policy</b><small>decides the money supply</small></div>
+    <p class="cap">All 19 leaders attend, but only <b>12 vote</b>. The New York Fed president always votes; four other seats rotate each year.</p>`;
+}
+
+/* 6. Animated T-account: 100% reserve vs fractional */
+function figTAcct(el){
+  const ST = [
+    {cash:100, res:0, loans:0, dep:0, who:"You", cap:"You have <b>$100 cash</b>. No bank involved yet. Money supply = <b>$100</b>."},
+    {cash:0, res:100, loans:0, dep:100, who:"You", cap:"You deposit it. The bank keeps <b>all</b> of it (100% reserves). Cash fell $100, deposits rose $100. Money supply is still <b>$100</b>: no change."},
+    {cash:90, res:10, loans:90, dep:100, who:"Borrower", cap:"Now the bank keeps only <b>10%</b> ($10) and lends <b>$90</b>. You still have $100 in the bank, and a borrower has $90 cash. Money supply = <b>$190</b>. The bank created $90."}
+  ];
+  let prev = null;
+  stepper(el, {title:'<span class="modeltag">📘 Textbook model, as in the lecture</span><br>Inside the bank: watch the T-account', sub:"Assets on the left, what the bank owes on the right.", n:() => ST.length, draw:(i, st) => {
+    const s = ST[i], p = prev || s, ch = (a) => prev && p[a] !== s[a] ? "pop flash" : "";
+    const money = s.dep + s.cash;
+    st.innerHTML = `<div class="tacct"><div class="th">First National Bank</div><div class="tcols">
+        <div><small>Assets</small>${s.res ? `<div class="tline ${ch("res")}"><span>Reserves</span><b>${$$(s.res)}</b></div>` : ""}${s.loans ? `<div class="tline ${ch("loans")}"><span>Loans</span><b>${$$(s.loans)}</b></div>` : ""}${!s.res && !s.loans ? `<span class="muted small">Nothing yet</span>` : ""}</div>
+        <div><small>Liabilities</small>${s.dep ? `<div class="tline ${ch("dep")}"><span>Deposits</span><b>${$$(s.dep)}</b></div>` : `<span class="muted small">Nothing yet</span>`}</div></div></div>
+      <div class="wallet ${ch("cash")}"><span class="em">👛</span><span>Cash held by the public${s.cash ? ` (${s.who})` : ""}: <b>${$$(s.cash)}</b></span></div>
+      <div class="eq"><span>Deposits ${$$(s.dep)}</span>+<span>Cash ${$$(s.cash)}</span>=<span class="tot ${prev && p.cash !== s.cash ? "pop" : ""}">Money ${$$(money)}</span></div>
+      <div class="meter"><span style="width:${money/2}%"></span></div>`;
+    prev = s; return s.cap;
+  }});
+}
+
+/* 7. Money but not wealth: balance scale */
+function figBalance(el){
+  el.innerHTML = `<div class="figt">The borrower: richer, or not?</div>
+  <svg class="scale" viewBox="0 0 320 200" role="img" aria-label="A balanced scale. Left pan: gets $90 cash. Right pan: owes the bank $90. The beam is level, so wealth does not change.">
+    <path d="M160 60 L140 180 L180 180 Z" style="fill:var(--line)"/>
+    <rect x="40" y="56" width="240" height="8" rx="4" style="fill:var(--note)"/>
+    <circle cx="160" cy="60" r="7" style="fill:var(--gold)"/>
+    <line x1="70" y1="64" x2="70" y2="104" style="stroke:var(--note);stroke-width:2"/>
+    <line x1="250" y1="64" x2="250" y2="104" style="stroke:var(--note);stroke-width:2"/>
+    <rect x="12" y="104" width="116" height="52" rx="10" style="fill:var(--right-soft);stroke:var(--right);stroke-width:2"/>
+    <text x="70" y="126" text-anchor="middle" style="font-size:16px;font-weight:700">+ $90 cash</text>
+    <text x="70" y="146" text-anchor="middle" style="font-size:13px;fill:var(--muted)">what they have</text>
+    <rect x="192" y="104" width="116" height="52" rx="10" style="fill:var(--wrong-soft);stroke:var(--wrong);stroke-width:2"/>
+    <text x="250" y="126" text-anchor="middle" style="font-size:16px;font-weight:700">− $90 debt</text>
+    <text x="250" y="146" text-anchor="middle" style="font-size:13px;fill:var(--muted)">what they owe</text>
+    <text x="160" y="30" text-anchor="middle" style="font-size:15px;font-weight:700">Net change in wealth: $0</text>
+  </svg>
+  <p class="cap">The scale stays level. The borrower is <b>more liquid</b> (has cash to spend) but <b>not richer</b>. Banks create <b>money</b>, not <b>wealth</b>.</p>`;
+}
+
+/* 8. Lending chain as shrinking bars */
+function figChain(el){
+  let R = 0.10, timer = null;
+  el.innerHTML = `<div class="figt"><span class="modeltag">📘 Textbook model, as in the lecture</span><br>Each loan is smaller than the last</div><p class="figsub">A $100 deposit moves bank to bank. Pick a reserve ratio, then press Play.</p>
+    <div class="rchips">${[0.1,0.2,0.25,0.5].map(r => `<button type="button" class="chipbtn" data-r="${r}" aria-pressed="${r===0.1}">R = ${r*100}%</button>`).join("")}</div>
+    <div class="rows"></div>
+    <div class="total"><div style="display:flex;justify-content:space-between;align-items:baseline"><span>Total money created</span><span class="bignum tv">$0</span></div>
+    <div class="meter gold"><span class="tb"></span></div><div class="ends"><span>$0</span><span class="lim"></span></div></div>
+    <p class="cap" aria-live="polite"></p><button type="button" class="btn play" style="margin-top:12px">Play</button>`;
+  const rows = el.querySelector(".rows"), tv = el.querySelector(".tv"), tb = el.querySelector(".tb"), cap = el.querySelector(".cap"), lim = el.querySelector(".lim"), play = el.querySelector(".play");
+  const reset = () => { clearTimeout(timer); rows.innerHTML = ""; tv.textContent = "$0"; tb.style.width = "0"; lim.textContent = `Limit: ${$$(100/R)}`; cap.innerHTML = `With R = ${R*100}%, each bank keeps ${R*100}% and lends ${100-R*100}%. Press Play.`; play.disabled = false; play.textContent = "Play"; };
+  const run = () => {
+    reset(); play.disabled = true; let k = 0, tot = 0; const N = 8, max = 100/R;
+    const tick = () => {
+      if (k < N){
+        const d = 100*Math.pow(1-R,k); tot += d;
+        const r = h("div","lrow pop",`<span>Bank ${k+1}</span><span class="b" style="width:${d}%"></span><span class="v">${$$(+d.toFixed(2))}</span>`); rows.appendChild(r);
+        tv.textContent = $$(Math.round(tot)); tb.style.width = (tot/max*100) + "%";
+        cap.innerHTML = k === 0 ? `Bank 1 gets the $100 deposit.` : `Bank ${k+1} gets ${$$(+d.toFixed(2))}: what Bank ${k} lent out.`;
+        k++; timer = setTimeout(tick, RM ? 0 : 650);
+      } else {
+        rows.appendChild(h("div","lrow",`<span class="muted">…</span><span class="muted small">smaller and smaller, forever</span><span></span>`));
+        tv.textContent = $$(max); tb.style.width = "100%";
+        cap.innerHTML = `All the deposits add up to <b>${$$(max)}</b>. That’s $100 × (1 ÷ ${R}) = $100 × <b>${+(1/R).toFixed(2)}</b>. The ${+(1/R).toFixed(2)} is the <b>money multiplier</b>.`;
+        play.disabled = false; play.textContent = "Play again";
+      }
+    };
+    tick();
+  };
+  el.querySelectorAll(".chipbtn").forEach(b => b.onclick = () => { R = +b.dataset.r; el.querySelectorAll(".chipbtn").forEach(x => x.setAttribute("aria-pressed", x === b)); reset(); });
+  play.onclick = run; reset();
+}
+
+/* 9. Leaks: why the real multiplier is smaller */
+function figLeaks(el){
+  el.innerHTML = `<div class="figt"><span class="modeltag">📘 Textbook model, as in the lecture</span><br>Leaks in the chain</div><p class="figsub">The Fed adds $100 of reserves and R = 10%. Turn on real-world leaks.</p>
+    <label class="toggle"><input type="checkbox" class="lk-c"><span><b>People keep some cash</b><br><span class="small muted">Borrowers keep 20% of each loan in their wallet instead of depositing it.</span></span></label>
+    <label class="toggle"><input type="checkbox" class="lk-e"><span><b>Banks keep extra reserves</b><br><span class="small muted">Banks hold 10% more than required, just in case.</span></span></label>
+    <div class="compare"><div class="lbl"><span>No leaks (textbook 1/R)</span><b>$1,000</b></div><div class="meter"><span style="width:100%"></span></div>
+    <div class="lbl"><span>With the leaks you chose</span><b class="lk-v">$1,000</b></div><div class="meter gold"><span class="lk-b" style="width:100%"></span></div></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:8px"><span>Money multiplier</span><span class="bignum lk-m">10</span></div>
+    <p class="cap lk-cap" aria-live="polite">No leaks: every dollar lent comes back as a deposit, so the multiplier is the full 1 ÷ 0.10 = 10.</p>`;
+  const c = el.querySelector(".lk-c"), e = el.querySelector(".lk-e");
+  const calc = () => {
+    const cr = c.checked ? 0.2 : 0, ex = e.checked ? 0.1 : 0;
+    let d = 100, money = 0;
+    for (let i = 0; i < 400; i++){ const loan = d*(1-0.1-ex); const cash = loan*cr; money += d + cash; d = loan - cash; if (d < 1e-6) break; }
+    el.querySelector(".lk-v").textContent = $$(Math.round(money));
+    el.querySelector(".lk-b").style.width = (money/10) + "%";
+    el.querySelector(".lk-m").textContent = (money/100).toFixed(1);
+    el.querySelector(".lk-cap").innerHTML = !cr && !ex ? "No leaks: every dollar lent comes back as a deposit, so the multiplier is the full 1 ÷ 0.10 = 10." :
+      `Money that leaks into ${cr && ex ? "wallets and extra reserves" : cr ? "wallets" : "extra reserves"} can’t be lent again, so the chain stops sooner. The multiplier drops to <b>${(money/100).toFixed(1)}</b>. The Fed doesn’t control these choices, so it can’t control the money supply exactly.`;
+  };
+  c.onchange = calc; e.onchange = calc;
+}
+
+/* 10. Open-market operation in motion */
+function figOMO(el){
+  let mode = "buy", sp;
+  const SEQ = {
+    buy:[
+      {hot:[0,1], pills:[["Fed pays Ana $100 (new money)","up"],["Ana gives the Fed a $100 bond",""]], cap:"The Fed <b>buys</b> a $100 government bond from Ana. It pays with newly created dollars.", m:"+$100"},
+      {hot:[1,2], pills:[["Ana deposits $100","up"],["Bank reserves +$100","up"]], cap:"Ana deposits the $100. Her bank now has <b>$100 more reserves</b>.", m:"+$100"},
+      {hot:[2,3], pills:[["Bank keeps $10",""],["Bank lends $90","up"]], cap:"The bank keeps 10% and lends $90. The lending chain from Lesson 6 starts.", m:"+$190"},
+      {hot:[0,1,2,3], pills:[["Up to $1,000 of new money","up"]], cap:"With R = 10%, $100 of new reserves can grow into <b>$1,000</b> of money.", m:"+$1,000"}
+    ],
+    sell:[
+      {hot:[0,1], pills:[["Ana pays the Fed $100","down"],["Fed gives Ana a $100 bond",""]], cap:"The Fed <b>sells</b> a $100 bond to Ana. She pays from her bank account, and that money leaves the economy.", m:"−$100"},
+      {hot:[1,2], pills:[["Ana’s deposit −$100","down"],["Bank reserves −$100","down"]], cap:"Ana’s bank loses $100 of deposits and <b>$100 of reserves</b>.", m:"−$100"},
+      {hot:[2,3], pills:[["Bank must cut lending","down"]], cap:"Short of reserves, the bank makes fewer loans. The chain runs in reverse.", m:"−$190"},
+      {hot:[0,1,2,3], pills:[["Up to $1,000 less money","down"]], cap:"With R = 10%, the money supply can shrink by up to <b>$1,000</b>.", m:"−$1,000"}
+    ]
+  };
+  const N = [["🏛️","Fed"],["👩","Ana"],["🏦","Bank"],["🧑‍🤝‍🧑","Borrowers"]];
+  const top = `<div class="seg" role="group" aria-label="Fed action"><button type="button" aria-pressed="true" data-m="buy">Fed buys bonds</button><button type="button" aria-pressed="false" data-m="sell">Fed sells bonds</button></div>`;
+  sp = stepper(el, {title:'<span class="modeltag">📘 Textbook model, as in the lecture</span><br>An open-market operation, step by step', top, n:() => SEQ[mode].length, draw:(i, st) => {
+    const s = SEQ[mode][i];
+    st.innerHTML = `<div class="flow4">${N.map((n,k) => `<div class="node ${s.hot.includes(k) ? "hot" : "dim"}"><div class="em">${n[0]}</div><small>${n[1]}</small></div>`).join("")}</div>
+      <div class="moved">${s.pills.map(p => `<span class="pill ${p[1]} pop">${p[0]}</span>`).join("")}</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:10px"><span>Change in money supply</span><span class="bignum pop" style="color:${mode === "buy" ? "var(--right)" : "var(--wrong)"}">${s.m}</span></div>`;
+    return s.cap;
+  }});
+  el.querySelectorAll(".seg button").forEach(b => b.onclick = () => { mode = b.dataset.m; el.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed", x === b)); sp.reset(); });
+}
+
+/* 11. All three tools */
+function figTools(el){
+  const T = {
+    up:[["Open-market operations","Fed buys bonds","Reserves ↑","Money ↑","Used most: easy, any size."],["Reserve requirements","Fed lowers them","Multiplier ↑","Money ↑","Used rarely: changes disrupt banks."],["Discount rate","Fed lowers it","Banks borrow more reserves","Money ↑","Mainly used to help banks in trouble."]],
+    down:[["Open-market operations","Fed sells bonds","Reserves ↓","Money ↓","Used most: easy, any size."],["Reserve requirements","Fed raises them","Multiplier ↓","Money ↓","Used rarely: changes disrupt banks."],["Discount rate","Fed raises it","Banks borrow fewer reserves","Money ↓","Mainly used to help banks in trouble."]]
+  };
+  el.innerHTML = `<div class="figt"><span class="modeltag">📘 Textbook model, as in the lecture</span><br>The Fed’s three tools</div><p class="figsub">Pick a goal and follow each chain of effects.</p>
+    <div class="seg" role="group" aria-label="Goal"><button type="button" aria-pressed="true" data-k="up">More money</button><button type="button" aria-pressed="false" data-k="down">Less money</button></div><div class="tl"></div><span class="todaynote">🕒 Today: reserve requirements are 0%, and the Fed steers interest rates mainly through the interest it pays on reserves. See the box below.</span>`;
+  const draw = k => { el.querySelector(".tl").innerHTML = T[k].map(t => `<div class="tool pop"><span class="lbl">${t[0]}</span><div class="chain"><span class="chip">${t[1]}</span>→<span class="chip">${t[2]}</span>→<span class="chip ${k}">${t[3]}</span></div><span class="muted small">${t[4]}</span></div>`).join(""); };
+  el.querySelectorAll(".seg button").forEach(b => b.onclick = () => { el.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed", x === b)); draw(b.dataset.k); });
+  draw("up");
+}
+
+/* ================= lab steps ================= */
+const STEPS = [
+ { title:"Why do we need money?", html:`
+   <p>Imagine a world with no money. To get something, you must trade something you already have. This is ${g("Barter")}.</p>
+   <p>Barter only works when you want what the other person has, <i>and</i> they want what you have: a ${g("Double coincidence of wants")}.</p>
+   <div class="fig" data-fig="barter"></div>
+   <p class="small muted">Tip: tap any dotted word to see what it means.</p>`,
+   check:[
+    {id:"c1a", q:"Why is barter hard?", a:1,
+     o:[["Goods are too expensive","Price isn’t the problem. Even cheap goods can’t be traded if the other person doesn’t want what you offer."],
+        ["Both people must want what the other has","Exactly. That ‘double coincidence of wants’ is rare, as the shoemaker showed."],
+        ["Banks charge fees","There are no banks in a barter economy. The problem is matching what people want."]],
+     hint:"Think of the shoemaker. Why did he turn down the bread?", more:"Money splits one hard trade into two easy ones: sell for money, then buy with money."},
+    {id:"c1b", q:"In the picture, how did the baker finally get shoes?", a:1,
+     o:[["The shoemaker started to like bread","He still wanted fish. Nothing about his wants changed."],
+        ["The baker used money from selling bread","Yes. The baker sold bread for $5, then spent the $5 on shoes."],
+        ["The fisher made shoes for him","The fisher only had fish. The money moved, not the skills."]],
+     hint:"Follow the $5. Where did the baker get it?", more:"This is money’s first job: a medium of exchange."}
+   ]},
+ { title:"The three jobs of money", html:`
+   <p>To economists, ${g("Money")} means the assets people regularly use to buy things. It is not the same as wealth: a rich person has a lot of wealth, not necessarily a lot of money.</p>
+   <div class="stack">
+     <div class="info"><b>${g("Medium of exchange","Medium of exchange")}</b><span>What you hand over to pay.</span></div>
+     <div class="info"><b>${g("Unit of account","Unit of account")}</b><span>What prices are measured in.</span></div>
+     <div class="info"><b>${g("Store of value","Store of value")}</b><span>A way to keep buying power for later.</span></div>
+   </div>
+   <div class="fig" data-fig="jobs"></div>
+   <h3>Liquidity</h3>
+   <p>${g("Liquidity")} means how easily something turns into money you can spend. Money is the most liquid asset of all.</p>
+   <div class="fig" data-fig="liquidity"></div>
+   <p>The trade-off: the most liquid things (cash, checking) earn little or no interest. Bonds pay interest but must be sold first.</p>`,
+   check:[
+    {id:"c2a", q:"A store lists a shirt at $25. Which job is money doing?", a:1,
+     o:[["Medium of exchange","Not yet. Nobody has paid. Money is only measuring the price."],
+        ["Unit of account","Yes. The price is measured in dollars, so money is the yardstick."],
+        ["Store of value","Nothing is being saved for later here."]],
+     hint:"Has anything been paid or saved, or is $25 just a measurement?", more:"Because everything is priced in dollars, you can compare a $25 shirt and $50 jeans instantly."},
+    {id:"c2b", q:"You need cash tonight. Which of these is most liquid?", a:2,
+     o:[["A house","A house can take months to sell, plus big fees. It’s the least liquid."],
+        ["A government bond","Bonds sell fairly fast, but usually take a day or more to become spendable."],
+        ["Your checking account","Yes. You can spend it right away with a debit card. Only cash is more liquid."]],
+     hint:"Look at the ladder. Which one had the shortest bar?", more:"The catch: checking accounts pay little or no interest. Liquidity has a cost."}
+   ]},
+ { title:"Kinds of money and how we count it", html:`
+   <div class="stack">
+     <div class="info"><b>${g("Commodity money","Commodity money")}</b><span>Valuable by itself. Example: gold coins.</span></div>
+     <div class="info"><b>${g("Fiat money","Fiat money")}</b><span>No value by itself. It’s money because the government says so. Example: the dollar bill.</span></div>
+   </div>
+   <p>The ${g("Money stock","money stock")} is all the money in the economy. Its two main parts are ${g("Currency")} and ${g("Demand deposits")} (checking accounts). The Fed counts it two ways: ${g("M1")} and ${g("M2")}.</p>
+   <div class="fig" data-fig="msort"></div>
+   ${tn("Savings deposits are counted in M2 only.","Since May 2020 the Fed counts savings deposits in M1 too, so today’s M1 is much larger. For your quizzes, use the lecture’s definitions.")}`,
+   check:[
+    {id:"c3a", q:"Which is bigger, M1 or M2?", a:1,
+     o:[["M1","M1 is the narrow measure. Look at the boxes: can the inner box be bigger than the box around it?"],
+        ["M2","Yes. M2 holds everything in M1, plus savings, money market funds and small CDs."],
+        ["They are equal","They’d only be equal if nobody had savings accounts, money funds or CDs."]],
+     hint:"Look at the boxes. Which one is inside the other?", more:"The Fed reports both: M1 for money used to pay now, M2 for money that’s easy to spend soon."},
+    {id:"c3b", q:"Why isn’t a credit card counted as money?", a:1,
+     o:[["It earns interest","Credit cards charge interest; they don’t earn it. And that isn’t the reason."],
+        ["It only delays payment","Yes. A card is a short loan. You still pay the bill later with money."],
+        ["Only banks can use it","Anyone with a card can use it. The issue is what it is: a loan, not money."]],
+     hint:"When you swipe a credit card, have you paid yet, or borrowed?", more:"Cards still matter: people who use them hold less cash, which lowers M1."}
+   ]},
+ { title:"The Federal Reserve", html:`
+   <p>The ${g("Federal Reserve")} (the Fed) is the U.S. ${g("Central bank")}. It has two jobs:</p>
+   <div class="stack">
+     <div class="info"><b>1. Look after banks</b><span>It regulates banks and lends to them when no one else will. This makes it the ${g("Lender of last resort","lender of last resort")}.</span></div>
+     <div class="info"><b>2. Control the money supply</b><span>These decisions are called ${g("Monetary policy","monetary policy")}.</span></div>
+   </div>
+   <div class="fig" data-fig="fed"></div>
+   ${tn("Names Ben Bernanke as the Fed chair.","Bernanke led the Fed from 2006 to 2014, and the chair has changed since. The structure is the same: 7 governors, 12 Reserve Banks and the FOMC.")}`,
+   check:[
+    {id:"c4a", q:"How many people vote at an FOMC meeting?", a:1,
+     o:[["7","That counts only the governors. Look at the seats again: is anyone else in a voting seat?"],
+        ["12","Yes: 7 governors plus 5 bank presidents."],
+        ["19","That’s everyone who attends. Do all of them vote? Check the two colors of seats."]],
+     hint:"Count the dots in the FOMC box.", more:"The New York Fed president always votes because the New York Fed carries out the Fed’s bond trades."},
+    {id:"c4b", q:"During a panic, no one will lend to a bank, so the Fed does. The Fed is acting as…", a:1,
+     o:[["The FOMC","The FOMC sets monetary policy. It doesn’t make emergency loans."],
+        ["The lender of last resort","Yes. The Fed is the bank for banks when no one else will lend."],
+        ["A commercial bank","Commercial banks serve households and businesses. The Fed is the banks’ bank."]],
+     hint:"Which of the Fed’s two jobs is about protecting banks?", more:"That’s job 1. Job 2, controlling the money supply, is the rest of this lab."}
+   ]},
+ { title:"How banks create money", html:`
+   <p>${g("Reserves")} are deposits a bank keeps instead of lending out. What happens to the money supply depends on how much the bank keeps.</p>
+   <div class="fig" data-fig="tacct"></div>
+   <p>Real banks use ${g("Fractional-reserve banking")}: they keep only part of each deposit. The part they keep is the ${g("Reserve ratio")}, called <b>R</b>. Here R = 10%.</p>
+   <div class="fig" data-fig="balance"></div>`,
+   check:[
+    {id:"c5a", q:"With 100% reserves, you deposit $100 cash. The money supply…", a:1,
+     o:[["Goes up by $100","Deposits rose $100, but cash in people’s hands fell $100. They cancel out."],
+        ["Stays the same","Yes. Your cash just changed form into a deposit."],
+        ["Goes down by $100","Your cash left your wallet, but it’s now a $100 deposit you can still spend."]],
+     hint:"Look at the second stage of the T-account animation. What does the money equation say?", more:"Banks only change the money supply when they lend."},
+    {id:"c5b", q:"R = 10%. A bank gets a $100 deposit. How much can it lend?", a:1,
+     o:[["$10","That’s the part the bank keeps. What happens to the rest of the deposit?"],
+        ["$90","Yes. $100 − $10 in reserves = $90 to lend."],
+        ["$100","It must keep 10% as reserves, so it can’t lend all of it."]],
+     hint:"Reserves = R × deposits. The bank lends whatever is left.", more:"That $90 is new money: the depositor still has $100, and the borrower now has $90 too."},
+    {id:"c5c", q:"After taking a $90 loan, the borrower is…", a:1,
+     o:[["$90 richer","They have $90 more cash, but they also owe $90."],
+        ["No richer, but more liquid","Yes. +$90 cash and +$90 of debt: wealth unchanged, but they can spend now."],
+        ["$90 poorer","The debt is exactly matched by the cash they received."]],
+     hint:"Look at the balance scale.", more:"Remember the phrase: banks create money, not wealth."}
+   ]},
+ { title:"The money multiplier", html:`
+   <p>The $90 loan gets spent and deposited at another bank, which lends 90% of it, and so on. Each round is smaller.</p>
+   <div class="fig" data-fig="chain"></div>
+   <p>The ${g("Money multiplier")} is how much money banks create from each dollar of reserves:</p>
+   <div class="formula">Money multiplier = 1 ÷ R</div>
+   <h3>Where the formula comes from</h3>
+   <div class="derive">R = Reserves ÷ Deposits<br>so Deposits = Reserves × (1 ÷ R)<br>If everyone deposits all their money:<br>Money = Deposits = Reserves × <b>(1 ÷ R)</b></div>
+   <p class="small muted" style="margin-top:10px">It assumes (1) every bank uses the same R and (2) people hold no cash. Lesson 7 shows what happens when they don’t.</p>
+   ${tn("Banks must hold required reserves, such as 10%, and the money supply equals reserves × 1/R.","Reserve requirements have been 0% since March 26, 2020. Banks still hold large reserves at the Fed by choice (about $3 trillion in total). The multiplier still explains how lending creates money, but it is not how the Fed manages money today.")}`,
+   check:[
+    {id:"c6a", q:"If R = 25%, the money multiplier is…", a:1,
+     o:[["2.5","R is a fraction: 25% = 0.25, not 25. Then divide 1 by 0.25."],
+        ["4","Yes. 1 ÷ 0.25 = 4. $100 of reserves can support $400 of money."],
+        ["25","25% is the share banks keep, not how many times money grows. Use the formula 1 ÷ R."]],
+     hint:"Write R as a decimal, then divide 1 by it.", more:"Try R = 25% in the bar chart: the total stops at $400."},
+    {id:"c6b", q:"R = 10%. The Fed adds $50 of new reserves. The money supply can rise by…", a:1,
+     o:[["$50","That stops after the first deposit. Remember: the money keeps getting re-lent, bank after bank."],
+        ["$500","Yes. $50 × (1 ÷ 0.10) = $50 × 10 = $500."],
+        ["$5","That multiplies by R. But the lending chain makes money grow, so the answer must be bigger than $50."]],
+     hint:"Change in money = change in reserves × (1 ÷ R).", more:"A higher R would shrink this: at R = 20%, the same $50 supports only $250."}
+   ]},
+ { title:"Why the Fed’s control isn’t perfect", html:`
+   <p>The 1 ÷ R formula is a best case. In real life, money leaks out of the lending chain in two ways the Fed doesn’t control:</p>
+   <div class="stack">
+     <div class="info"><b>People keep some cash</b><span>Cash in a wallet isn’t deposited, so banks can’t lend it.</span></div>
+     <div class="info"><b>Banks keep ${g("Excess reserves","excess reserves")}</b><span>Extra reserves above the ${g("Required reserves","required")} amount aren’t lent out.</span></div>
+   </div>
+   <div class="fig" data-fig="leaks"></div>`,
+   check:[
+    {id:"c7a", q:"People start keeping more cash at home. The money multiplier…", a:1,
+     o:[["Rises","Cash at home isn’t deposited, so banks have less to lend. The chain gets shorter, not longer."],
+        ["Falls","Yes. Each round, some money leaks into wallets and stops being lent."],
+        ["Stays the same","The multiplier depends on how much money stays in the lending chain, and that just fell."]],
+     hint:"Turn on ‘People keep some cash’. What happened to the total?", more:"This is why 1 ÷ R is an upper limit, not a promise."},
+    {id:"c7b", q:"Why can’t the Fed perfectly control the money supply?", a:1,
+     o:[["It doesn’t know the reserve requirement","The Fed sets the reserve requirement, so it knows it."],
+        ["It can’t control how much cash people hold or how much banks lend","Yes. Both choices change the multiplier, and households and banks make them, not the Fed."],
+        ["Congress sets the money supply","Congress doesn’t. The Fed’s FOMC does."]],
+     hint:"Which decisions did the two leak switches represent? Who makes them?", more:"So Fed analysts watch banks and depositors constantly to keep the money supply on track."}
+   ]},
+ { title:"The Fed’s tools", html:`
+   <p>The Fed changes the money supply mainly with ${g("Open-market operations","open-market operations")}: buying or selling government bonds.</p>
+   <div class="fig" data-fig="omo"></div>
+   <p>It has two other tools: ${g("Reserve requirements","reserve requirements")} and the ${g("Discount rate","discount rate")}.</p>
+   <div class="fig" data-fig="tools"></div>
+   <p>One more term: the ${g("Federal funds rate","federal funds rate")} is the interest rate banks charge each other for overnight loans of reserves.</p>
+   ${tn("The Fed controls the money supply mainly by buying and selling bonds, with reserve requirements and the discount rate as backup tools.","The Fed sets a target range for the federal funds rate and steers it mainly by setting the interest rate it pays banks on their reserves (it began paying interest in 2008). It buys and sells securities to keep reserves at an ‘ample’ level. Reserve requirements are zero, and discount-window loans still back up banks as lender of last resort.")}`,
+   check:[
+    {id:"c8a", q:"To increase the money supply, the Fed would…", a:1,
+     o:[["Sell government bonds","Selling pulls dollars out, because buyers pay the Fed. That shrinks money."],
+        ["Buy government bonds","Yes. The Fed pays with new dollars that become bank reserves, and lending multiplies them."],
+        ["Raise reserve requirements","That makes banks keep more and lend less, so money falls."]],
+     hint:"In the step-through, which action put new dollars into Ana’s bank?", more:"Buying bonds is the Fed’s most-used tool because it’s easy and can be any size."},
+    {id:"c8b", q:"The Fed raises the discount rate. What happens?", a:1,
+     o:[["Banks borrow more from the Fed","A higher rate makes borrowing more expensive, so banks borrow less."],
+        ["Banks borrow fewer reserves, so the money supply falls","Yes. Fewer borrowed reserves means less lending."],
+        ["Nothing changes","When a loan costs more, banks take fewer of them. That changes reserves."]],
+     hint:"If borrowing gets more expensive, do you borrow more or less?", more:"In practice the Fed uses discount lending mostly to help banks in trouble."},
+    {id:"c8c", q:"The federal funds rate is the interest rate…", a:1,
+     o:[["The Fed charges banks for loans","That’s the discount rate."],
+        ["Banks charge each other for overnight loans of reserves","Yes. Banks short on reserves borrow from banks with extra, overnight."],
+        ["Banks pay on savings accounts","That’s a deposit rate, set by each bank."]],
+     hint:"Who is lending to whom: the Fed, or banks to each other?", more:"The FOMC sets a target for this rate and uses open-market operations to hit it."}
+   ]}
+];
+const FIGS = { barter:figBarter, jobs:figJobs, liquidity:figLiquidity, msort:figMSort, fed:figFed, tacct:figTAcct, balance:figBalance, chain:figChain, leaks:figLeaks, omo:figOMO, tools:figTools };
+
+const QUIZ = [
+ {id:"q1", L:0, q:"What is the main problem with barter?", a:1, hint:"Think of the shoemaker who turned down the bread. What had to line up for a trade?", o:[["Prices are too high","Barter doesn’t use money prices at all. The trouble is about who wants what."],["Trade needs a double coincidence of wants","Right. Each trader must want exactly what the other has."],["Banks can’t lend","There are no banks in a barter economy, so this can’t be the core problem."],["Money loses value","There’s no money in barter. Ask what makes a direct swap hard."]], more:"Money solves this by acting as a medium of exchange."},
+ {id:"q2", L:1, q:"Keeping $200 in a drawer to spend next year uses money as a…", a:2, hint:"Is the money paying for something, measuring a price, or waiting to be used later?", o:[["Unit of account","A unit of account measures prices. Is anything being priced here?"],["Medium of exchange","That job is about paying right now. Has anything been bought yet?"],["Store of value","Right. It carries buying power into the future."],["Reserve","Reserves are what banks hold. This is a household decision."]], more:"Inflation makes money an imperfect store of value: $200 buys less next year if prices rise."},
+ {id:"q3", L:1, q:"Paying $4 for a bus ticket uses money as a…", a:0, hint:"Focus on the action: what is happening to the money at this moment?", o:[["Medium of exchange","Right. You hand over money to pay."],["Unit of account","The $4 price uses money as a unit of account, but the question is about the act of paying."],["Store of value","Storing means keeping for later. Here the money is leaving your hands."],["Commodity","‘Commodity’ describes a kind of money, not a job money does."]], more:"The same dollars do different jobs depending on what you’re doing with them."},
+ {id:"q4", L:2, q:"Gold coins used as money are…", a:1, hint:"Would the gold still be worth something if no one used it as money?", o:[["Fiat money","Fiat money is worth something only because the government says so. Would gold be worthless without that?"],["Commodity money","Right. Gold has value by itself."],["Demand deposits","Demand deposits are bank balances, not coins."],["M2","M2 is a way of measuring money, not a kind of money."]], more:"Today’s dollar is fiat money: valuable only because people accept it."},
+ {id:"q5", L:1, q:"Which is the least liquid?", a:3, hint:"Picture the liquidity ladder. Which item took longest to turn into cash?", o:[["Cash","Cash is already money. How could anything be more liquid?"],["A checking account","You can spend it instantly with a debit card. Look further down the ladder."],["Stocks","Stocks sell within a day or two. Is there something slower?"],["A painting","Right. It can take months to find a buyer at a fair price."]], more:"Less liquid assets often earn more, to make up for being harder to sell."},
+ {id:"q6", L:2, q:"Which statement is true?", a:1, hint:"Picture the two boxes. Which one sits inside the other?", o:[["M1 is bigger than M2","Look at the boxes again: can the inner box be bigger than the one around it?"],["M2 includes all of M1","Right. M2 = M1 + other liquid assets."],["M1 and M2 don’t overlap","When you sorted currency, which box(es) did it end up in?"],["Credit cards are in M1","A credit card is a loan. Is a loan money?"]], more:"That’s why M2 is always at least as big as M1."},
+ {id:"q7", L:2, q:"Under the lecture’s definitions, savings deposits are in…", a:1, hint:"Can you pay a store directly from a savings account? That decides M1.", o:[["M1 only","Anything in M1 is automatically in M2 too, so ‘M1 only’ can’t happen."],["M2 only","Right. Liquid, but not used directly to pay."],["Both M1 and M2","That matches the Fed’s definition since 2020, but not the lecture’s. Which one does the question ask about?"],["Neither","Savings are very easy to move into checking. Would economists leave them out completely?"]], more:"On your quizzes, follow the lecture’s definition."},
+ {id:"q8", L:3, q:"How many governors sit on the Fed’s Board?", a:1, hint:"Count the dark green seats in the FOMC picture.", o:[["5","Five is a different group: the bank presidents who vote."],["7","Right. Seven, each with a 14-year term."],["12","Twelve shows up twice at the Fed, but neither is the number of governors."],["19","19 is everyone at an FOMC meeting. The Board is smaller."]], more:"Long 14-year terms protect governors from political pressure."},
+ {id:"q9", L:3, q:"Which FOMC member always votes?", a:1, hint:"One seat in the picture had a label. Which bank was it?", o:[["The Treasury Secretary","The Treasury is part of the government, not the Fed. Is it on the FOMC?"],["The New York Fed president","Right. The other four president seats rotate."],["The Chicago Fed president","Chicago is one of the rotating seats. Which bank never rotates out?"],["The longest-serving governor","All 7 governors vote. The question is about the bank presidents."]], more:"The New York Fed runs the trading desk that carries out open-market operations."},
+ {id:"q10", L:3, q:"Decisions about the money supply are called…", a:1, hint:"The name comes from what is being decided: money.", o:[["Fiscal policy","Fiscal policy is about government spending and taxes. Is this about the budget?"],["Monetary policy","Right. Made by the FOMC."],["Trade policy","Trade policy is about imports and exports. Think about what the Fed controls."],["Banking law","Laws come from Congress. Who makes the money-supply decisions?"]], more:"Fiscal = government budget. Monetary = money supply."},
+ {id:"q11", L:4, q:"A bank has $1,000 in deposits and $100 in reserves. Its reserve ratio is…", a:1, hint:"R = reserves ÷ deposits. Write it as a fraction, then a percent.", o:[["1%","Check the division: 100 ÷ 1,000. How many zeros?"],["10%","Right. R = 100 ÷ 1,000 = 0.10."],["90%","90% describes the part that isn’t kept as reserves. What fraction is kept?"],["100%","That would mean every deposit dollar is kept. Is that true here?"]], more:"Its money multiplier would be 1 ÷ 0.10 = 10."},
+ {id:"q12", L:5, q:"If R = 0.05, the money multiplier is…", a:2, hint:"Divide 1 by R. Dividing by a small number gives a big answer.", o:[["5","That turns 0.05 into 5 by multiplying by 100. The formula divides 1 by R instead."],["0.05","That’s R itself, not the multiplier."],["20","Right. 1 ÷ 0.05 = 20."],["50","Check the division again. How many 0.05s fit into 1?"]], more:"Lower R, bigger multiplier."},
+ {id:"q13", L:5, q:"R = 10% and the Fed adds $50 of reserves. The money supply can grow by up to…", a:1, hint:"Change in money = change in reserves × (1 ÷ R). Start with the multiplier.", o:[["$50","That stops after the first deposit. Remember: the money keeps getting re-lent."],["$500","Right. $50 × 10 = $500."],["$5","That multiplies by R. The lending chain makes money grow, so it should be more than $50."],["$5,000","That’s too far. What is 1 ÷ 0.10?"]], more:"Change in money = change in reserves × 1/R."},
+ {id:"q14", L:4, q:"When banks lend out deposits, they create…", a:0, hint:"Think of the balance scale: what did the borrower gain, and what did they owe?", o:[["Money but not wealth","Right. Borrowers gain cash but owe the same amount."],["Wealth but not money","The money supply did change in the T-account. What about the borrower’s net worth?"],["Both money and wealth","The cash is matched by something on the other side of the scale. What?"],["Neither","In the T-account, money went from $100 to $190. Was nothing created?"]], more:"Borrowers become more liquid, not richer."},
+ {id:"q15", L:6, q:"If people start keeping more cash at home, the multiplier…", a:1, hint:"Turn on the ‘people keep cash’ leak in your mind. Does the chain get longer or shorter?", o:[["Rises","Cash at home can’t be lent. Would that make the chain longer?"],["Falls","Right. Cash at home leaks out of the lending chain."],["Stays the same","The multiplier depends on how much money stays in banks. Did that change?"],["Becomes zero","Some lending still happens. Is the effect total?"]], more:"The Fed can’t control this, which makes its control imperfect."},
+ {id:"q16", L:7, q:"To reduce the money supply, the Fed can…", a:1, hint:"Think of the ‘Fed sells bonds’ walkthrough. Which way did money move?", o:[["Buy bonds","When the Fed buys, who receives new dollars? Does that add or remove money?"],["Sell bonds","Right. Buyers pay the Fed, pulling dollars out."],["Lower the discount rate","Cheaper borrowing from the Fed: would banks have more or fewer reserves?"],["Lower reserve requirements","Lower requirements let banks lend more. Is that the goal here?"]], more:"Selling bonds drains reserves, and the multiplier works in reverse."},
+ {id:"q17", L:7, q:"Raising reserve requirements will…", a:1, hint:"Higher required R. What happens to 1 ÷ R?", o:[["Raise the multiplier","Try it: compare 1 ÷ 0.10 with 1 ÷ 0.20. Which is bigger?"],["Lower the multiplier and the money supply","Right. Banks must keep more and lend less."],["Have no effect","R is in the multiplier formula. Can changing it do nothing?"],["Lower the discount rate","The discount rate is a separate tool. Focus on reserves."]], more:"The lecture notes the Fed rarely does this. Today requirements are set at zero."},
+ {id:"q18", L:7, q:"The discount rate is the rate…", a:1, hint:"‘Discount window’ loans go from the Fed to banks.", o:[["Banks charge each other overnight","Loans between banks have their own name. Who is the lender in a discount loan?"],["The Fed charges on loans to banks","Right. It’s the cost of borrowing from the Fed."],["Banks pay savers","That’s a deposit rate, set by each bank. Where does the Fed come in?"],["On 30-year mortgages","Mortgage rates are set in the market for home loans, not by the Fed directly."]], more:"Lower discount rate → banks borrow more reserves → more money."},
+ {id:"q19", L:7, q:"According to the lecture, why does the Fed rarely change reserve requirements?", a:1, hint:"Imagine your bank suddenly had to keep much more cash. What would it have to do?", o:[["It’s illegal","The Fed is allowed to set them. Look for a practical reason."],["It disrupts bank business","Right. Banks would have to change lending suddenly."],["It has no effect","The multiplier depends on R. Would changing R really do nothing?"],["Congress sets them","Think about who sets them in the lecture: Congress or the Fed?"]], more:"Today the requirements are zero, but the lecture’s reasoning is still worth knowing."},
+ {id:"q20", L:7, q:"The federal funds rate is the rate…", a:0, hint:"‘Federal funds’ are reserves. Who borrows them, and from whom?", o:[["Banks charge each other for short-term loans of reserves","Right. It’s the overnight rate between banks."],["The Fed pays on bonds","The Fed buys and sells bonds, but this rate is about loans of reserves. Who lends them?"],["On credit cards","Card rates are set by card companies. This rate is inside the banking system."],["The Treasury charges","The Treasury doesn’t lend reserves to banks."]], more:"The FOMC sets a target range for this rate. Today it steers it mainly with the interest it pays on reserves."}
+];
+const ROUNDS = [["Round 1","Money basics",0],["Round 2","Measures and the Fed",5],["Round 3","Banks and the multiplier",10],["Round 4","The Fed’s tools",15],["Mixed round","5 random questions",-1],["My weak spots","Questions you’ve missed before, mixed up",-2],["Number drills","Multiplier problems with new numbers every time",-3]];
+function genDrill(){
+  const Rs = [0.05,0.08,0.1,0.125,0.2,0.25,0.4,0.5], R = Rs[Math.floor(Math.random()*Rs.length)];
+  const amt = [20,40,50,80,100,200,250,400,500][Math.floor(Math.random()*9)];
+  const pct = (R*100) + "%", m = +(1/R).toFixed(2), f = v => $$(+v.toFixed(2));
+  const kind = Math.floor(Math.random()*3);
+  let q, o;
+  if (kind === 0){
+    q = `The reserve ratio is ${pct}. What is the money multiplier?`;
+    o = [[String(m),`Right. 1 ÷ ${R} = ${m}.`],[String(R*100),"That’s R written as a percent. The multiplier is 1 divided by R as a decimal."],[String(+(1/(1-R)).toFixed(2)),"That divides 1 by the share banks lend. The multiplier divides by the share they keep."],[String(R),"That’s R itself, not the multiplier."]];
+  } else if (kind === 1){
+    q = `R = ${pct}. The Fed adds ${$$(amt)} of new reserves. By how much can the money supply grow?`;
+    o = [[f(amt/R),`Right. ${$$(amt)} × ${m} = ${f(amt/R)}.`],[f(amt),"That stops after the first deposit. The money keeps getting re-lent."],[f(amt*R),"That multiplies by R. Lending makes money grow, so the answer must be bigger."],[f(amt*(1-R)),"That’s just the first bank’s loan, not the whole chain."]];
+  } else {
+    q = `A bank with R = ${pct} receives a new ${$$(amt)} deposit. How much can it lend?`;
+    o = [[f(amt*(1-R)),`Right. It keeps ${f(amt*R)} and lends the other ${f(amt*(1-R))}.`],[f(amt*R),"That’s the part the bank must keep as reserves."],[f(amt),"The bank must keep some of the deposit as reserves."],[f(amt/R),"That’s the most the whole banking system could create, not one bank’s loan."]];
+  }
+  const seen = new Set(); o = o.filter(x => !seen.has(x[0]) && seen.add(x[0]));
+  return {id:"gen", gen:true, L:5, q, o, a:0, hint:"Write R as a decimal first. Reserves = R × deposit, loan = the rest, multiplier = 1 ÷ R.", more:"New numbers appear every round, so keep drilling until it feels automatic."};
+}
+const WRITE = [
+ {q:"Explain the three functions of money. Give an example of each.",
+  keys:[["Names medium of exchange",/medium of exchange|means of payment/i],["Names unit of account",/unit of account|measure (of )?(value|price)|prices? (are|is) (measured|quoted|stated)/i],["Names store of value",/store of value|stor(e|es|ing) (wealth|value|purchasing power)/i],["Gives an example for each",/(\$\s?\d|for example|e\.g\.|for instance|such as)/i]],
+  model:"Money has three functions. First, it is a medium of exchange: buyers give it to sellers to pay, for example paying $3 for coffee. Second, it is a unit of account: prices and debts are measured in it, for example a laptop priced at $899. Third, it is a store of value: it carries purchasing power into the future, for example saving $50 to spend next month."},
+ {q:"What is the difference between commodity money and fiat money? Which does the U.S. use today?",
+  keys:[["Commodity money has intrinsic value",/intrinsic|value (of|in) itself|valuable (in|by) itself|its own value/i],["Fiat money is money by government decree",/decree|government (says|declares|order)|law|legal tender/i],["Example of commodity money (gold)",/gold|silver/i],["The U.S. uses fiat money",/(u\.?s\.?|united states|dollar).{0,40}fiat|fiat.{0,40}(u\.?s\.?|united states|dollar)/i]],
+  model:"Commodity money takes the form of a commodity with intrinsic value, such as gold coins. Fiat money has no intrinsic value; it is used as money because the government declares it to be money. The U.S. dollar is fiat money: the paper itself is worth little, but people accept it."},
+ {q:"Define M1 and M2. Why is M2 always larger than M1?",
+  keys:[["M1 includes currency",/currency|cash|coins/i],["M1 includes demand (checking) deposits",/demand deposit|checking|checkable/i],["M2 adds savings, money market funds or time deposits",/saving|money market|time deposit|\bcds?\b|certificate/i],["M2 includes all of M1",/m2.{0,40}(includes|contains|plus|adds).{0,20}m1|m1.{0,20}(is )?(part|inside|included|subset)/i]],
+  model:"M1 is the narrow measure of money: currency, demand deposits, traveler’s checks and other checkable deposits, all used directly as a medium of exchange. M2 includes everything in M1 plus other highly liquid assets: savings deposits, money market mutual funds and small time deposits. M2 is always larger because it contains all of M1 and adds more."},
+ {q:"Credit cards are used to buy things. Why are they not counted in the money supply?",
+  keys:[["Cards defer or delay payment",/defer|delay|postpone|later/i],["A card is a loan or credit",/loan|credit|borrow/i],["The bill is paid with money (e.g. checking)",/pay(ing)? (the|your|off).{0,25}(bill|balance)|with (money|cash|a check|checking)/i]],
+  model:"Credit cards are not money because they are a way to defer payment, not to make it. Using a card is taking a short-term loan from the card company. At the end of the month you pay the bill with money, such as a check from your checking account. Cards do affect money holdings, though: people who use them hold less currency."},
+ {q:"Describe how the Federal Reserve is organized and state its two main jobs.",
+  keys:[["Board of 7 governors (14-year terms)",/(7|seven) (governors|members|board)|board of governors|14.year|fourteen.year/i],["12 regional Reserve Banks",/(12|twelve) (regional|reserve|federal reserve|district)/i],["FOMC sets monetary policy",/fomc|open market committee/i],["Job 1: regulate banks / lender of last resort",/regulat|supervis|lender of last resort|health of (the )?bank/i],["Job 2: control the money supply",/money supply|quantity of money|monetary policy/i]],
+  model:"The Fed is the U.S. central bank. It has a Board of Governors in Washington with seven governors serving 14-year terms, including the chair, and twelve regional Federal Reserve Banks. Monetary policy is set by the FOMC: the 7 governors plus 5 rotating bank presidents vote. The Fed’s two jobs are to regulate banks and act as lender of last resort, and to control the money supply."},
+ {q:"Explain why a bank that holds 100% of its deposits as reserves does not change the money supply.",
+  keys:[["Currency in circulation falls",/currency.{0,40}(falls|decreas|down|drops|declin)|cash.{0,40}(falls|decreas|down|drops|declin)/i],["Deposits rise",/deposits?.{0,30}(rise|increas|up|grow)/i],["By the same amount, so no change",/same amount|cancel|offset|unchanged|no change|doesn.t change|does not change/i],["No loans are made",/no loans?|doesn.t lend|does not lend|not lend|lends nothing/i]],
+  model:"With 100% reserves the bank keeps every deposit and makes no loans. If someone deposits $100 of currency, currency in circulation falls by $100 and demand deposits rise by $100. The two changes cancel, so the money supply is unchanged. Banks only affect the money supply when they lend."},
+ {q:"Using a reserve ratio of 10% and a $100 deposit, explain how banks create money.",
+  keys:[["Bank keeps $10 as reserves",/\$?10\b.{0,30}reserve|reserve.{0,30}\$?10\b/i],["Bank lends $90",/(lend|loan).{0,20}\$?90|\$?90.{0,20}(lend|loan)/i],["Money supply becomes $190",/190/],["Loans are redeposited and the process repeats",/repeat|next bank|another bank|second (national )?bank|redeposit|again/i],["Total reaches $1,000 (multiplier of 10)",/1,?000|multiplier.{0,20}10|10 ?times/i]],
+  model:"With R = 10%, the bank keeps $10 of a $100 deposit as reserves and lends $90. The depositor still has $100 in deposits and the borrower has $90, so the money supply is $190. The borrower spends the $90, which is deposited at another bank; that bank keeps $9 and lends $81, and the process repeats with smaller amounts. In the end the $100 of reserves supports $1,000 of money, a money multiplier of 1/0.10 = 10."},
+ {q:"State the formula for the money multiplier and the two assumptions behind it.",
+  keys:[["Multiplier = 1/R",/1\s?\/\s?r|1 ?÷ ?r|one over r|reciprocal/i],["R = reserves ÷ deposits",/reserves?\s?(\/|÷|divided by|over)\s?deposits?/i],["Assumption: all banks have the same reserve ratio (no excess reserves)",/same (reserve )?ratio|same r\b|excess reserve|all banks/i],["Assumption: people hold no currency (deposit everything)",/no (currency|cash)|hold all.{0,30}deposit|deposit (all|everything)|don.t hold (currency|cash)/i]],
+  model:"The money multiplier is 1/R, where R = reserves ÷ deposits. Since deposits = reserves × (1/R), and if all money is held as deposits, the money supply = reserves × (1/R). This assumes (1) all banks hold the same reserve ratio, with no extra reserves, and (2) people hold all their money as deposits rather than currency. If either fails, the multiplier is smaller."},
+ {q:"Describe the Fed’s three tools of monetary control and how each would be used to increase the money supply.",
+  keys:[["Open-market operations: buy bonds",/(buy|purchas).{0,30}bond|open.market/i],["Lower reserve requirements",/(lower|reduc|cut|decreas).{0,30}reserve requirement|reserve requirements?.{0,30}(lower|reduc|cut|decreas)/i],["Lower the discount rate",/(lower|reduc|cut|decreas).{0,30}discount rate|discount rate.{0,30}(lower|reduc|cut|decreas)/i],["Open-market operations are used most",/most (often|frequent|common|used)|main tool|primary tool/i]],
+  model:"First, open-market operations: the Fed buys U.S. government bonds with new money, adding reserves that banks multiply through lending. This is its most-used tool because it is easy and flexible. Second, reserve requirements: lowering them raises the money multiplier, though the Fed rarely does this because it disrupts banks. Third, the discount rate: lowering the rate the Fed charges on loans to banks encourages them to borrow reserves, increasing the money supply."},
+ {q:"Why can’t the Fed perfectly control the money supply?",
+  keys:[["People choose how much currency to hold",/currency|cash/i],["Banks choose how many excess reserves to hold / how much to lend",/excess reserve|banks.{0,40}(hold|keep|lend|loan)/i],["These choices change the multiplier",/multiplier/i]],
+  model:"The Fed controls reserves, but not two decisions that affect the money multiplier. Households decide how much money to hold as currency rather than deposits; more currency means less lending. Banks decide how much to hold as excess reserves rather than lend; more reserves means less lending. Because these choices change the multiplier, the Fed must monitor banks and depositors to keep the money supply on track."},
+ {q:"Explain the statement: banks create money but not wealth.",
+  keys:[["Lending adds to the money supply",/(loan|lend).{0,60}(money supply|creat|new money|increas)/i],["The borrower owes a debt",/debt|owe|liabilit|repay|pay (it )?back/i],["Wealth / net worth is unchanged",/(wealth|net worth|richer).{0,40}(unchanged|same|no change|not|isn.t|cancel)|no richer|not richer|cancel/i],["Borrowers become more liquid",/liquid/i]],
+  model:"When a bank lends part of a deposit, the depositor still has their deposit and the borrower now has cash, so the money supply rises. But the borrower also owes the bank the same amount, so their assets and debts rise equally and their wealth is unchanged. Banks make the economy more liquid, not wealthier."}
+];
+const WTAG = [1,2,2,2,3,4,4,5,7,6,4];
