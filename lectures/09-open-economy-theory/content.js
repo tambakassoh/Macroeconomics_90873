@@ -321,7 +321,7 @@ const STEPS = [
    ]},
  { title:"Budget deficits and the twin deficits", html:`
    <p>Suppose the government, starting with a balanced budget and balanced trade, runs a budget deficit. Step through all three panels.</p>
-   <div class="fig" data-fig="scen" data-key="deficit"></div>
+   <div class="fig" data-fig="scen" data-key="deficit"></div><div class="fig" data-fig="twin"></div>
    <p>U.S. data show that budget deficits and trade deficits often move together: the ${g("Twin deficits","twin deficits")}.</p>
    <p>One more effect: as foreigners acquire more U.S. assets, U.S. debt to the rest of the world grows. These are mostly private debts, the sum of individual choices, not money “we” owe collectively.</p>
    ${tn("At the end of 2009, the U.S. owned $18.4 trillion of foreign assets and foreigners owned $21.1 trillion of U.S. assets, a net debt of $2.7 trillion.","After many more years of deficits, the Bureau of Economic Analysis put that net gap at about $21 trillion in early 2026.")}`,
@@ -363,7 +363,7 @@ const STEPS = [
    ]},
  { title:"Capital flows and capital flight", html:`
    <p>${g("Capital flight")} is a large, sudden drop in demand for a country’s assets. In 1994, political instability in Mexico made investors sell Mexican assets and pull their money out. We look at it from <b>Mexico’s</b> side.</p>
-   <div class="fig" data-fig="scen" data-key="flight" data-opts="flight,china"></div>
+   <div class="fig" data-fig="scen" data-key="flight" data-opts="flight,china"></div><div class="fig" data-fig="history"></div>
    <p>Capital flight hit Mexico (1994), Southeast Asia (1997), Russia (1998) and Argentina (2002): interest rates rose and currencies fell.</p>
    <p><b>China case study</b> (second tab): China bought U.S. assets to hold down its own currency and boost exports. In the U.S., the dollar appreciated against the renminbi, imports from China rose, and the trade deficit grew. Some politicians wanted trade restrictions, but U.S. consumers benefited, and the net effect was probably small.</p>`,
    check:[
@@ -388,7 +388,50 @@ const STEPS = [
      hint:"It’s the opposite of a budget deficit.", more:"Raising saving is the model’s answer to a trade deficit."}
    ]}
 ];
-const FIGS = { lf:figLF, fx:figFX, link:figLink, scen:el => figScenario(el, el.dataset.key), jobs:figJobs, myth:figMyth, predict:figPredict };
+
+/* Lecture 9 upgrade: verified PowerPoint data and original source figures. */
+const TWIN_DATA = [{"period": "1961–65", "deficit": -0.464, "nx": 0.846}, {"period": "1966–70", "deficit": 0.342, "nx": 0.319}, {"period": "1971–75", "deficit": 2.139, "nx": 0.201}, {"period": "1976–80", "deficit": 1.81, "nx": -0.738}, {"period": "1981–85", "deficit": 3.91, "nx": -1.56}, {"period": "1986–90", "deficit": 3.143, "nx": -2.228}, {"period": "1991–95", "deficit": 3.702, "nx": -0.893}, {"period": "1996–2000", "deficit": -0.137, "nx": -2.183}, {"period": "2001–05", "deficit": 2.159, "nx": -4.613}, {"period": "2006–10", "deficit": 5.101, "nx": -4.404}];
+function figTwin(el){
+  let k = 0; const on = {deficit:true, nx:true};
+  const SER = [["deficit","Federal budget deficit","var(--wrong)"],["nx","Net exports","var(--note)"]];
+  el.innerHTML = `<div class="figt">The “twin deficits”: the lecture’s data</div><p class="figsub">Slide 18. Five-year averages, percent of U.S. GDP. Tap a series to hide or show it, and slide through the periods.</p>
+    <div class="rchips">${SER.map(s => `<button type="button" class="chipbtn" aria-pressed="true" data-s="${s[0]}"><span style="display:inline-block;width:12px;height:4px;background:${s[2]};vertical-align:middle;margin-right:6px"></span>${s[1]}</button>`).join("")}</div>
+    <div class="tw-c"></div>
+    <label for="tw-period" style="display:flex;justify-content:space-between"><span>Period</span><b class="tw-pv"></b></label><input type="range" id="tw-period" min="0" max="9" step="1" value="0">
+    <div class="stack tw-v"></div>
+    <p class="cap">Budget deficits and net exports often move in opposite directions, as the model predicts. The data alone don’t prove budget policy caused every movement.</p>`;
+  const draw = () => {
+    const w = 340, h = 230, L = 34, R = 10, T = 12, B = 34, X = i => L + 8 + i*(w-L-R-16)/9, Y = v => T + (6-v)*(h-T-B)/12;
+    let g = ""; for (let v = -6; v <= 6; v += 2) g += `<line x1="${L}" y1="${Y(v)}" x2="${w-R}" y2="${Y(v)}" style="stroke:${v === 0 ? "var(--muted)" : "var(--line)"};stroke-width:1"/><text x="${L-4}" y="${Y(v)+4}" text-anchor="end" class="sm">${v}%</text>`;
+    const ticks = [0,3,6,9].map(i => `<text x="${X(i)}" y="${h-16}" text-anchor="middle" class="sm">${TWIN_DATA[i].period.slice(0,4)}</text>`).join("");
+    const lines = SER.filter(s => on[s[0]]).map(s => `<polyline points="${TWIN_DATA.map((d,i) => `${X(i).toFixed(1)},${Y(d[s[0]]).toFixed(1)}`).join(" ")}" style="fill:none;stroke:${s[2]};stroke-width:3"/>` +
+      TWIN_DATA.map((d,i) => `<circle cx="${X(i)}" cy="${Y(d[s[0]])}" r="${i === k ? 6 : 3.5}" style="fill:${s[2]};stroke:var(--surface);stroke-width:${i === k ? 2 : 0}"/>`).join("")).join("");
+    el.querySelector(".tw-c").innerHTML = `<svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="Federal budget deficit and net exports as a percent of GDP, 1961 to 2010">${g}${ticks}<line x1="${X(k)}" y1="${T}" x2="${X(k)}" y2="${h-B}" style="stroke:var(--ink);stroke-width:1;stroke-dasharray:3 3"/>${lines}</svg>`;
+    const d = TWIN_DATA[k]; el.querySelector(".tw-pv").textContent = d.period;
+    el.querySelector(".tw-v").innerHTML = kv("Federal budget deficit", d.deficit.toFixed(1) + "% of GDP" + (d.deficit < 0 ? " (a surplus)" : "")) + kv("Net exports", `<span style="color:${d.nx < 0 ? "var(--wrong)" : "var(--right)"}">${d.nx > 0 ? "+" : ""}${d.nx.toFixed(1)}% of GDP</span>`);
+  };
+  el.querySelector("#tw-period").oninput = e => { k = +e.target.value; draw(); };
+  el.querySelectorAll(".chipbtn").forEach(b => b.onclick = () => { const s = b.dataset.s; if (on[s] && Object.values(on).filter(Boolean).length === 1) return; on[s] = !on[s]; b.setAttribute("aria-pressed", on[s]); draw(); });
+  draw();
+}
+function figHistoricalFlight(el){
+  const scenes=[
+   {n:37,c:'Mexico, 1994–95',desc:'The peso lost significant dollar value during the Mexican currency crisis. The slide plots U.S. dollars per peso.',take:'Observe the large drop in late December 1994.'},
+   {n:38,c:'Southeast Asia, 1997–98',desc:'South Korea, Thailand and Indonesia experienced sharp currency depreciation. The chart is indexed to January 1, 1997 = 100.',take:'Compare the timing and severity across currencies.'},
+   {n:39,c:'Russia, 1998',desc:'The Russian currency fell sharply in dollar value during the 1998 financial crisis.',take:'Notice the sudden shift followed by a lower trading range.'},
+   {n:40,c:'Argentina, 2002',desc:'The Argentine currency lost dollar value during the 2002 crisis.',take:'Notice how sharply the plotted exchange rate declines.'}
+  ];
+  let idx=0;
+  el.innerHTML=`<div class="figt">Capital-flight evidence: four historical crises</div><p class="figsub">Original charts from slides 37–40. Use the controls to compare countries. These are historical illustrations, not present-day exchange rates.</p><div class="seg hf-tabs" role="group" aria-label="Select crisis">${scenes.map((s,i)=>`<button type="button" data-i="${i}" aria-pressed="${i===0}">${s.c.split(',')[0]}</button>`).join('')}</div><div class="hf-body"></div>`;
+  const body=el.querySelector('.hf-body');
+  function draw(){let s=scenes[idx]; let src=`figures/original-slide-${s.n}.png`;
+   body.innerHTML=`<h3>${s.c}</h3><img src="${src}" alt="Original Lecture 9 slide ${s.n} showing historical exchange rate changes for ${s.c}" loading="lazy" style="width:100%;height:auto;max-height:470px;object-fit:contain;border-radius:10px;background:white"><p class="cap">${s.desc}</p><div class="info" style="margin-top:8px"><b>Look for</b><span>${s.take}</span></div><p class="cap">Source: supplied Lecture 9 PowerPoint, slide ${s.n}.</p>`;
+   el.querySelectorAll('.hf-tabs button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===idx)));
+  }
+  el.querySelectorAll('.hf-tabs button').forEach(b=>b.onclick=()=>{idx=+b.dataset.i;draw();});draw();
+}
+
+const FIGS = { twin:figTwin, history:figHistoricalFlight,  lf:figLF, fx:figFX, link:figLink, scen:el => figScenario(el, el.dataset.key), jobs:figJobs, myth:figMyth, predict:figPredict };
 
 /* ---------- self-check ---------- */
 const QUIZ = [
