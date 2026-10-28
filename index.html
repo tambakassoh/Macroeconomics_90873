@@ -3,7 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1f4430">
+<meta name="theme-color" content="#B00B00">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Study Labs">
 <title>Macroeconomics Study Labs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,6 +35,7 @@
   <h1>Macroeconomics Study Labs</h1>
   <p class="muted">Practice spaces for each lecture: animated lessons, questions that explain themselves, flashcards, self-checks and short-answer practice. Not graded. Progress saves on your own device.</p>
   <div class="lecs" id="lecs"></div>
+  <div class="startcard" id="offline" style="display:none"><b style="font-family:var(--serif)">Study offline</b><p class="small muted" style="margin:6px 0 10px">Save every lecture on this device so the labs work without internet, for example on a bus or train.</p><button type="button" class="btn" id="offline-btn">Save all lectures for offline</button><p class="small" id="offline-msg" aria-live="polite" style="margin:8px 0 0"></p></div>
   <p class="muted small">Based on Mankiw, <i>Principles of Macroeconomics</i>, and the course lectures.</p>
 </main>
 <script>
@@ -58,6 +64,22 @@ LECTURES.forEach(L => {
   el.innerHTML = `<span class="num" aria-hidden="true">${L.n}</span><span><b>Lecture ${L.n}: ${L.title}</b><small>${status}</small></span>${L.path ? '<span class="go" aria-hidden="true">Open →</span>' : ""}`;
   box.appendChild(el);
 });
+// ---- app + offline ----
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")){
+  navigator.serviceWorker.register("/sw.js");
+  const card = document.getElementById("offline"), btn = document.getElementById("offline-btn"), out = document.getElementById("offline-msg");
+  card.style.display = "block";
+  btn.onclick = async () => {
+    btn.disabled = true;
+    const files = ["index.html", "assets/lab.css", "assets/lab.js"];
+    LECTURES.filter(L => L.path).forEach(L => { files.push(L.path); files.push(L.path.replace("index.html", "content.js")); });
+    await navigator.serviceWorker.ready;
+    let done = 0, failed = 0;
+    for (const f of files){ try { const r = await fetch(f, {cache:"reload"}); if (!r.ok) failed++; } catch(e) { failed++; } done++; out.textContent = `Saving… ${done} of ${files.length}`; }
+    out.textContent = failed ? `Saved ${done - failed} of ${files.length} files. Check your connection and try again.` : "All lectures are saved on this device. They’ll work offline.";
+    btn.disabled = false; btn.textContent = "Update offline copy";
+  };
+}
 </script>
 </body>
 </html>

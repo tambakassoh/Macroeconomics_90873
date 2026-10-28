@@ -357,6 +357,12 @@ function initLab(cfg){
   KEY = CFG.key;
   try { const r = localStorage.getItem(KEY); if (r) S = Object.assign(blank(), JSON.parse(r)); } catch(e) {}
   document.title = CFG.title + " – " + CFG.lecture;
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")){
+    navigator.serviceWorker.register("/sw.js");
+    const head = document.head, add = (tag, attrs) => { const n = document.createElement(tag); Object.entries(attrs).forEach(([k,v]) => n.setAttribute(k, v)); head.appendChild(n); };
+    add("link", {rel:"manifest", href:"/manifest.webmanifest"}); add("link", {rel:"apple-touch-icon", href:"/icons/apple-touch-icon.png"}); add("link", {rel:"icon", type:"image/png", href:"/icons/favicon-32.png"});
+    const tc = document.querySelector('meta[name="theme-color"]'); if (tc) tc.setAttribute("content", "#B00B00");
+  }
   document.body.insertAdjacentHTML("afterbegin", `<header class="appbar only-mobile">
   <div class="wrap appbar-in">
     <a class="appbar-title" href="${CFG.hub}">${CFG.title}</a>
