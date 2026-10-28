@@ -56,19 +56,39 @@ const numIn = (cls, val) => `<input type="text" class="${cls}" value="${val}" in
 
 /* ---------- graphics ---------- */
 function figFlow(el){
+  /* A true circular flow: real flows (labor, goods) on the inner loop, money flows (income, spending) on the outer loop. */
   const ST = [
     {on:[], cap:"Two groups: <b>households</b> (who own labor, land and capital) and <b>firms</b> (who produce goods and services). They meet in two markets."},
-    {on:["f1","f2"], cap:"<b>Market for factors of production:</b> households sell or rent labor, land and capital to firms, and receive wages, rent and profit. That’s households’ <b>income</b>."},
-    {on:["f1","f2","g1","g2"], cap:"<b>Market for goods and services:</b> firms sell output to households, who spend their income on it. That’s <b>expenditure</b>, and it’s firms’ revenue."},
-    {on:["f1","f2","g1","g2","eq"], cap:"Every dollar of spending is a dollar of someone’s income. So for the whole economy, <b>income = expenditure</b>, and GDP measures both."}
+    {on:["f1"], cap:"<b>Factor market:</b> households supply <b>labor, land and capital</b> to firms (inner arrow)."},
+    {on:["f1","f2"], cap:"Firms pay for them with <b>wages, rent and profit</b>. That money is households’ <b>income</b> (outer arrow)."},
+    {on:["f1","f2","g1"], cap:"<b>Goods and services market:</b> firms sell the <b>goods and services</b> they produce to households (inner arrow)."},
+    {on:["f1","f2","g1","g2"], cap:"Households pay for them: that’s <b>spending</b>, or <b>expenditure</b>, which becomes firms’ revenue (outer arrow)."},
+    {on:["f1","f2","g1","g2","eq"], cap:"Follow the money around the loop: every dollar spent is a dollar of someone’s income. So for the whole economy, <b>income = expenditure = GDP</b>."}
   ];
+  const real = "var(--note)", cash = "var(--gold)";
+  const box = (x, y, w, hh, title, sub, cls) => `<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="10" style="fill:${cls === "m" ? "var(--paper)" : "var(--surface)"};stroke:${cls === "m" ? "var(--border)" : "var(--ink)"};stroke-width:1.5${cls === "m" ? ";stroke-dasharray:5 4" : ""}"/>
+    <text x="${x + w/2}" y="${y + (sub ? hh/2 - 3 : hh/2 + 5)}" text-anchor="middle" style="font:700 15px var(--serif);fill:var(--ink)">${title}</text>${sub ? `<text x="${x + w/2}" y="${y + hh/2 + 15}" text-anchor="middle" class="sm mute">${sub}</text>` : ""}`;
+  const flow = (id, d, col, dash, lab, lx, ly, anchor, on) => on.includes(id) ? `<path d="${d}" class="pop" style="fill:none;stroke:${col};stroke-width:3.5${dash ? ";stroke-dasharray:7 5" : ""}" marker-end="url(#cf-${col === real ? "r" : "m"})"/><text x="${lx}" y="${ly}" text-anchor="${anchor}" class="sm halo pop" style="font-weight:700;fill:${col}">${lab}</text>` : "";
   stepper(el, {title:"The circular flow: why income equals expenditure", n:() => ST.length, draw:(i, st) => {
-    const on = k => ST[i].on.includes(k);
-    const arrow = (k, txt, dir) => `<div class="tx ${on(k) ? "tx-ok pop" : ""}" style="${on(k) ? "" : "opacity:.35"};margin-top:6px;justify-content:center;text-align:center"><span>${dir} ${txt}</span></div>`;
-    st.innerHTML = `<div class="orgrow"><div class="node"><div style="font-size:28px">🏠</div><b>Households</b><small>own labor, land, capital</small></div><div class="node gold"><div style="font-size:28px">🏭</div><b>Firms</b><small>produce goods and services</small></div></div>
-      <p class="small" style="margin:10px 0 0;font-weight:700">Factor markets</p>${arrow("f1","Labor, land, capital","→")}${arrow("f2","Wages, rent, profit = income","←")}
-      <p class="small" style="margin:10px 0 0;font-weight:700">Goods and services markets</p>${arrow("g1","Goods and services","←")}${arrow("g2","Spending = expenditure","→")}
-      ${on("eq") ? `<div class="formula pop">Total income = total expenditure = GDP</div>` : ""}`;
+    const on = ST[i].on;
+    st.innerHTML = `<svg class="chart" viewBox="0 0 340 330" role="img" aria-label="Circular flow diagram: households and firms trade in the factor market and the goods and services market">
+      <defs><marker id="cf-r" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:${real}"/></marker>
+            <marker id="cf-m" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:${cash}"/></marker></defs>
+      ${box(110, 14, 120, 46, "Factor market", "", "m")}
+      ${box(110, 270, 120, 46, "Goods market", "", "m")}
+      ${box(6, 140, 96, 54, "🏠 Households", "", "a")}
+      ${box(238, 140, 96, 54, "🏭 Firms", "", "a")}
+      ${flow("f1", "M70 138 Q74 44 108 40", real, false, "labor, land, capital", 26, 84, "start", on)}
+      ${flow("f1", "M232 40 Q266 44 270 138", real, false, "", 0, 0, "start", on)}
+      ${flow("f2", "M300 138 Q320 10 232 24", cash, true, "", 0, 0, "start", on)}
+      ${flow("f2", "M108 24 Q20 10 40 138", cash, true, "$ wages, rent, profit", 6, 116, "start", on)}
+      ${flow("g1", "M270 196 Q266 286 232 290", real, false, "goods & services", 314, 250, "end", on)}
+      ${flow("g1", "M108 290 Q74 286 70 196", real, false, "", 0, 0, "start", on)}
+      ${flow("g2", "M40 196 Q20 320 108 306", cash, true, "$ spending", 8, 238, "start", on)}
+      ${flow("g2", "M232 306 Q320 320 300 196", cash, true, "", 0, 0, "start", on)}
+      ${on.includes("eq") ? `<g class="pop"><rect x="112" y="134" width="116" height="66" rx="10" style="fill:var(--brand-soft);stroke:var(--brand-ink);stroke-width:1.5"/><text x="170" y="158" text-anchor="middle" style="font:700 14px var(--serif);fill:var(--ink)">Income</text><text x="170" y="175" text-anchor="middle" style="font:700 14px var(--serif);fill:var(--ink)">= Expenditure</text><text x="170" y="192" text-anchor="middle" style="font:700 14px var(--serif);fill:var(--brand-ink)">= GDP</text></g>` : ""}
+    </svg>
+    <div class="legend" style="justify-content:center;margin-top:4px"><span><i style="background:${real}"></i>goods and resources</span><span><i style="background:${cash}"></i>money ($)</span></div>`;
     return ST[i].cap;
   }});
 }

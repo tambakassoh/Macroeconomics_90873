@@ -60,14 +60,14 @@ body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-in
 .lessonlist .dot.done{background:var(--note); border-color:var(--note)}
 
 /* buttons */
-.btn{font:600 17px var(--sans); border-radius:10px; padding:12px 16px; min-height:48px; cursor:pointer; border:1.5px solid var(--note); background:var(--note); color:var(--paper); width:100%}
-.btn.ghost{background:transparent; color:var(--note)}
+.btn{font:600 17px var(--sans); border-radius:10px; padding:12px 16px; min-height:48px; cursor:pointer; border:1.5px solid var(--brand); background:var(--brand); color:var(--on-brand); width:100%}
+.btn.ghost{background:transparent; color:var(--brand-ink); border-color:var(--brand-ink)}
 .btn:disabled{background:var(--paper); border-color:var(--border); color:var(--muted); cursor:default}
 .btnrow{display:grid; grid-template-columns:1fr 2fr; gap:10px; margin-top:22px}
 .btnrow.even{grid-template-columns:1fr 1fr}
 .linkbtn{background:none; border:0; font:600 14px var(--sans); color:var(--muted); text-decoration:underline; cursor:pointer; padding:10px 0; min-height:44px}
 .chipbtn{font:600 15px var(--sans); border:1.5px solid var(--border); background:var(--surface); color:var(--ink); border-radius:999px; padding:8px 14px; min-height:44px; cursor:pointer}
-.chipbtn[aria-pressed="true"]{border-color:var(--note); background:var(--note-soft); color:var(--note)}
+.chipbtn[aria-pressed="true"]{border-color:var(--brand-ink); background:var(--brand-soft); color:var(--brand-ink)}
 
 /* lab header */
 .labhead{display:flex; justify-content:space-between; align-items:center; font:600 14px var(--sans); color:var(--muted)}
@@ -200,7 +200,7 @@ svg.scale text{fill:var(--ink); font-family:var(--sans)}
 
 /* toggles */
 .toggle{display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-top:1px solid var(--line); cursor:pointer}
-.toggle input{width:24px; height:24px; accent-color:var(--note); flex:none; margin-top:2px}
+.toggle input{width:24px; height:24px; accent-color:var(--brand); flex:none; margin-top:2px}
 .compare{display:grid; gap:4px; margin-top:12px}
 .compare .lbl{display:flex; justify-content:space-between; font-size:14px}
 
@@ -215,7 +215,7 @@ textarea::placeholder{color:var(--muted); opacity:1}
 .pill.up{background:var(--right-soft); color:var(--right)} .pill.down{background:var(--wrong-soft); color:var(--wrong)}
 .seg{display:grid; grid-template-columns:1fr 1fr; background:var(--paper); border-radius:10px; padding:4px; gap:4px; margin-bottom:12px}
 .seg button{border:0; background:none; font:600 15px var(--sans); padding:10px; border-radius:8px; color:var(--muted); cursor:pointer; min-height:44px}
-.seg button[aria-pressed="true"]{background:var(--surface); color:var(--note); box-shadow:var(--shadow)}
+.seg button[aria-pressed="true"]{background:var(--surface); color:var(--brand-ink); box-shadow:var(--shadow)}
 .tool{padding:12px 0; border-top:1px solid var(--line)}
 .tool:first-child{border-top:0}
 .tool .lbl{font:700 15px var(--serif); display:block; margin-bottom:6px}
@@ -281,7 +281,7 @@ textarea{width:100%; min-height:170px; font:400 17px/1.5 var(--sans); padding:12
 details.tips{background:var(--note-soft); border-radius:10px; padding:10px 14px; margin-bottom:12px; font-size:15px}
 details.tips summary{font-weight:600; cursor:pointer; min-height:28px}
 .kp{display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-top:1px solid var(--line); font-size:16px}
-.kp input{width:22px; height:22px; accent-color:var(--note); flex:none; margin-top:2px}
+.kp input{width:22px; height:22px; accent-color:var(--brand); flex:none; margin-top:2px}
 .kp .found{font-size:12px; font-weight:700; color:var(--right); margin-left:6px}
 .model{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px 14px; font-size:16px}
 
@@ -348,7 +348,7 @@ svg.chart text{fill:var(--ink); font-family:var(--sans)}
 svg.chart .sm{font-size:13px}
 svg.chart .mute{fill:var(--muted)}
 svg.chart .halo{paint-order:stroke; stroke:var(--surface); stroke-width:4px; stroke-linejoin:round}
-input[type=range]{width:100%; height:36px; accent-color:var(--note); margin:2px 0 8px; cursor:pointer}
+input[type=range]{width:100%; height:36px; accent-color:var(--brand); margin:2px 0 8px; cursor:pointer}
 @media (min-width:960px){ .hubrow.only-mobile{display:none} }
 
 /* ---------- SUNY Cortland identity (brand red on identity elements only) ---------- */
@@ -358,3 +358,4 @@ body::before{background:var(--brand)}
   .tabbar{border-top:5px solid var(--brand)}
   .tabbar button[aria-current="page"]{background:var(--brand-soft)}
 }
+@media (hover:hover){ .btn:not(:disabled):hover{filter:brightness(1.12)} .btn.ghost:not(:disabled):hover{background:var(--brand-soft); filter:none} }
