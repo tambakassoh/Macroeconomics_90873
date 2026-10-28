@@ -349,3 +349,4 @@ svg.chart .sm{font-size:13px}
 svg.chart .mute{fill:var(--muted)}
 svg.chart .halo{paint-order:stroke; stroke:var(--surface); stroke-width:4px; stroke-linejoin:round}
 input[type=range]{width:100%; height:36px; accent-color:var(--note); margin:2px 0 8px; cursor:pointer}
+@media (min-width:960px){ .hubrow.only-mobile{display:none} }
