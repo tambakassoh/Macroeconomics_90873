@@ -203,6 +203,47 @@ function figTradable(el){
   ], [["t","Easy to trade"],["n","Hard to trade"]], () => "Could you buy it in one country and resell it in another?");
 }
 
+
+/* ---------- historical charts (data embedded in the Lecture 8 PowerPoint, quarterly, % of GDP) ---------- */
+const HIST = {"trade":{"EXP/Y":{"x":1960.0,"y":[4.93,5.25,5.1,5.25,5.21,5.08,4.95,5.03,4.91,5.26,4.92,4.79,4.83,5.3,4.9,5.08,5.26,5.28,5.19,5.36,4.76,5.52,5.09,5.28,5.11,5.32,5.09,5.25,5.38,5.29,5.07,5.15,5.17,5.24,5.38,5.26,4.58,5.52,5.35,5.62,5.59,5.87,5.74,5.8,5.75,5.64,5.74,5.24,5.76,5.48,5.72,5.91,6.29,6.7,7.02,7.52,8.07,8.53,8.36,8.8,9.01,8.52,8.07,8.31,8.1,8.13,8.26,8.28,8.02,8.07,7.86,7.48,7.66,8.19,8.19,8.5,8.59,8.74,9.01,9.54,9.86,10.17,10.22,10.03,10.01,10.0,9.52,9.54,9.21,9.09,8.54,8.01,8.01,7.83,7.76,7.77,7.7,7.74,7.69,7.65,7.42,7.26,6.94,7.04,7.12,7.1,7.13,7.37,7.3,7.57,7.8,8.02,8.45,8.68,8.8,8.87,9.03,9.27,9.19,9.22,9.42,9.42,9.5,9.73,9.77,9.93,9.98,10.13,10.13,9.97,10.04,9.91,9.86,9.88,9.74,9.86,9.85,10.03,10.34,10.46,10.68,10.84,11.14,11.12,11.1,11.01,10.89,11.27,11.3,11.54,11.59,11.39,11.21,10.9,10.58,10.72,10.48,10.5,10.62,10.7,10.84,10.95,11.17,10.98,10.79,10.26,9.68,9.26,9.27,9.49,9.54,9.4,9.3,9.19,9.25,9.62,9.82,9.94,9.92,10.09,10.2,10.37,10.27,10.46,10.73,10.91,10.97,11.3,11.43,11.56,11.94,12.33,12.7,13.3,13.31,11.99,10.83,10.83,11.21,11.84,12.17,12.47,12.54,12.95,13.34]},"IMP/Y":{"x":1960.0,"y":[4.42,4.47,4.33,4.14,4.11,4.06,4.24,4.25,4.22,4.27,4.25,4.31,4.18,4.24,4.28,4.23,4.16,4.2,4.24,4.34,4.1,4.48,4.41,4.54,4.54,4.64,4.82,4.81,4.82,4.74,4.72,4.89,5.05,5.02,5.24,5.15,4.56,5.4,5.26,5.29,5.26,5.34,5.37,5.5,5.35,5.66,5.75,5.38,6.07,5.83,5.93,6.16,6.4,6.53,6.55,6.89,7.63,8.71,8.83,8.8,7.96,7.18,7.34,7.51,7.84,8.15,8.48,8.63,9.1,9.13,8.85,8.88,9.46,9.18,9.21,9.18,9.33,9.62,9.9,10.55,11.17,10.73,10.02,10.26,10.48,10.44,9.75,10.0,9.72,9.23,9.45,8.9,8.73,9.13,9.57,9.71,10.19,10.41,10.3,10.32,9.65,10.02,9.73,10.16,10.03,10.04,10.23,10.31,10.36,10.72,10.86,11.01,10.97,10.79,10.75,10.94,10.94,10.92,10.56,10.72,10.98,10.6,10.77,11.07,10.55,10.3,10.3,10.48,10.43,10.47,10.61,10.6,10.69,10.82,10.75,10.93,11.01,11.32,11.69,11.87,12.14,12.35,12.15,12.05,12.26,12.22,12.34,12.37,12.62,12.56,12.73,12.76,12.77,12.76,12.55,12.68,12.8,13.21,13.63,13.85,14.53,14.61,15.12,15.02,14.68,13.79,13.24,12.7,12.84,13.43,13.61,13.86,13.92,13.77,13.69,14.08,14.53,15.09,15.24,15.75,15.67,15.89,16.03,16.57,16.61,16.76,16.96,16.55,16.68,16.77,16.91,17.2,17.86,18.5,18.57,16.13,13.5,13.22,14.1,14.82,15.49,16.17,16.27,16.28,17.15]}},"saving":{"S/Y":{"x":1960.0,"y":[17.44,15.94,15.67,14.11,14.41,15.06,15.71,15.77,16.21,16.07,15.78,14.95,15.67,16.15,15.84,16.24,16.61,16.33,16.23,16.5,17.29,17.4,17.18,17.03,17.67,17.43,16.68,16.88,16.37,15.58,15.7,15.84,15.73,16.08,15.35,15.53,16.23,16.07,16.19,15.68,15.15,15.43,15.22,14.45,16.0,15.96,16.09,15.42,15.93,16.51,16.79,16.73,17.31,18.13,17.85,18.61,17.31,16.81,15.76,16.48,14.98,14.85,15.03,15.25,15.77,16.13,15.92,15.83,15.76,16.64,17.32,16.86,16.66,17.95,18.31,18.89,18.79,18.63,18.26,17.77,17.23,16.69,16.12,16.85,17.99,17.44,18.42,17.76,16.02,16.24,15.24,13.69,13.96,14.26,14.29,15.43,16.14,16.15,16.34,15.78,15.26,14.85,14.29,14.53,14.52,14.09,13.21,13.28,13.53,13.23,13.09,14.17,13.6,14.1,14.11,13.98,14.59,14.46,14.35,14.04,13.85,14.04,13.54,12.59,12.63,12.79,13.02,13.35,12.79,13.25,13.15,13.27,13.4,13.29,13.09,13.55,13.92,14.42,13.97,14.4,14.43,13.89,14.1,14.4,14.15,14.54,14.77,14.89,14.9,15.71,15.68,15.49,15.82,15.06,15.13,15.36,15.36,14.63,14.48,14.54,13.71,14.54,13.93,13.7,12.85,12.97,12.65,11.75,11.94,11.6,11.35,10.97,10.73,10.67,11.07,11.51,11.27,11.46,11.43,11.34,11.74,11.38,11.24,11.51,11.84,11.77,11.36,11.55,11.26,11.41,11.36,10.95,10.19,9.81,9.31,9.28,9.0,8.52,8.08,8.48,8.72,8.93,9.2,8.91,8.61]},"I/Y":{"x":1960.0,"y":[16.91,15.15,14.88,13.0,13.31,14.06,15.0,14.97,15.52,15.07,15.14,14.5,15.02,15.09,15.23,15.37,15.5,15.27,15.29,15.48,16.63,16.35,16.51,16.29,17.09,16.76,16.42,16.45,15.81,15.04,15.35,15.59,15.59,15.86,15.2,15.42,16.2,15.95,16.09,15.34,14.82,14.9,14.86,14.14,15.6,15.98,16.1,15.56,16.23,16.85,17.0,16.97,17.41,17.94,17.39,17.99,16.88,16.99,16.21,16.47,13.94,13.51,14.3,14.45,15.51,16.16,16.13,16.18,16.85,17.7,18.32,18.26,18.46,18.94,19.33,19.57,19.53,19.51,19.15,18.78,18.55,17.24,15.92,17.08,18.45,17.88,18.66,18.22,16.53,16.38,16.15,14.58,14.69,15.57,16.1,17.37,18.64,18.82,18.95,18.45,17.49,17.61,17.08,17.65,17.43,17.02,16.31,16.22,16.59,16.38,16.15,17.16,16.12,16.22,16.06,16.05,16.49,16.1,15.73,15.54,15.42,15.22,14.82,13.93,13.4,13.15,13.35,13.69,13.09,13.75,13.72,13.96,14.23,14.23,14.11,14.62,15.09,15.71,15.32,15.81,15.88,15.4,15.11,15.34,15.32,15.74,16.21,15.99,16.23,16.73,16.82,16.86,17.38,16.92,17.1,17.32,17.68,17.34,17.49,17.69,17.39,18.2,17.89,17.74,16.74,16.5,16.21,15.2,15.51,15.55,15.42,15.43,15.35,15.25,15.5,15.97,15.98,16.61,16.75,16.99,17.21,16.9,17.0,17.62,17.72,17.62,17.35,16.8,16.52,16.63,16.34,15.82,15.35,15.0,14.58,13.43,11.68,10.9,10.97,11.47,12.04,12.63,12.93,12.25,12.42]},"NCO/Y":{"x":1960.0,"y":[0.53,0.8,0.79,1.11,1.1,1.0,0.71,0.8,0.69,0.99,0.64,0.46,0.65,1.06,0.61,0.87,1.11,1.06,0.94,1.02,0.66,1.05,0.68,0.74,0.58,0.67,0.26,0.43,0.56,0.54,0.35,0.26,0.14,0.22,0.15,0.11,0.03,0.12,0.1,0.34,0.33,0.53,0.36,0.3,0.4,-0.02,-0.01,-0.14,-0.3,-0.34,-0.21,-0.24,-0.1,0.19,0.46,0.62,0.44,-0.18,-0.46,0.01,1.04,1.35,0.72,0.81,0.26,-0.03,-0.22,-0.35,-1.09,-1.06,-1.0,-1.4,-1.8,-0.99,-1.02,-0.68,-0.74,-0.88,-0.89,-1.01,-1.31,-0.55,0.2,-0.23,-0.47,-0.44,-0.24,-0.46,-0.51,-0.14,-0.91,-0.89,-0.72,-1.31,-1.82,-1.94,-2.5,-2.67,-2.61,-2.67,-2.23,-2.76,-2.79,-3.12,-2.91,-2.94,-3.1,-2.94,-3.06,-3.15,-3.06,-2.99,-2.51,-2.12,-1.95,-2.07,-1.91,-1.64,-1.38,-1.5,-1.56,-1.18,-1.27,-1.34,-0.77,-0.36,-0.32,-0.35,-0.3,-0.49,-0.57,-0.7,-0.83,-0.94,-1.02,-1.08,-1.17,-1.29,-1.36,-1.41,-1.45,-1.5,-1.01,-0.94,-1.17,-1.2,-1.45,-1.1,-1.33,-1.02,-1.14,-1.37,-1.56,-1.86,-1.97,-1.96,-2.32,-2.71,-3.01,-3.15,-3.69,-3.66,-3.95,-4.05,-3.89,-3.53,-3.56,-3.45,-3.57,-3.94,-4.07,-4.46,-4.63,-4.58,-4.44,-4.46,-4.71,-5.15,-5.32,-5.65,-5.47,-5.51,-5.76,-6.11,-5.88,-5.85,-5.99,-5.25,-5.26,-5.22,-4.98,-4.87,-5.15,-5.2,-5.27,-4.15,-2.67,-2.39,-2.89,-2.99,-3.32,-3.7,-3.73,-3.33,-3.81]}}};
+function figHist(el, key){
+  const C = key === "trade"
+    ? {title:"U.S. exports and imports, 1960–2011", sub:"Data from the lecture’s chart. Percent of GDP.", ser:[["EXP/Y","Exports","var(--note)"],["IMP/Y","Imports","var(--gold)"]], start:1990}
+    : {title:"U.S. saving, investment and NCO, 1960–2011", sub:"Data from the lecture’s chart. Percent of GDP.", ser:[["S/Y","Saving","var(--note)"],["I/Y","Investment","var(--gold)"],["NCO/Y","NCO","var(--wrong)"]], start:2006};
+  const D = HIST[key], on = {}; C.ser.forEach(s => on[s[0]] = true);
+  const yr = i => D[C.ser[0][0]].x + i*0.25, N = D[C.ser[0][0]].y.length;
+  el.innerHTML = `<div class="figt">${C.title}</div><p class="figsub">${C.sub} Tap a series to hide or show it, and slide to explore a year.</p>
+    <div class="rchips">${C.ser.map(s => `<button type="button" class="chipbtn" aria-pressed="true" data-s="${s[0]}"><span style="display:inline-block;width:12px;height:4px;background:${s[2]};vertical-align:middle;margin-right:6px"></span>${s[1]}</button>`).join("")}</div>
+    <div class="hc-c"></div>
+    <label style="display:flex;justify-content:space-between" for="hc-y-${key}"><span>Year</span><b class="hc-yv"></b></label>
+    <input type="range" id="hc-y-${key}" min="1960" max="2011" step="1" value="${C.start}">
+    <div class="stack hc-v"></div><p class="small muted">Historical figures from the Lecture 8 slides; the data end in 2011.</p>`;
+  const sl = el.querySelector("input");
+  const draw = () => {
+    const Y0 = +sl.value, idx = Math.min(N-1, Math.round((Y0 - yr(0))*4));
+    const act = C.ser.filter(s => on[s[0]]); const all = act.flatMap(s => D[s[0]].y);
+    let lo = Math.min(0, ...(all.length ? all : [0])), hi = Math.max(...(all.length ? all : [1]));
+    lo = Math.floor(lo/4)*4; hi = Math.ceil(hi/4)*4; if (hi === lo) hi = lo + 4;
+    const w = 340, h = 220, L = 34, R = 10, T = 12, B = 26, X = t => L + (t-1960)/51*(w-L-R), Yp = v => T + (hi-v)/(hi-lo)*(h-T-B);
+    const ticks = []; for (let v = lo; v <= hi; v += (hi-lo > 16 ? 8 : 4)) ticks.push(v);
+    const lines = act.map(s => `<polyline points="${D[s[0]].y.map((v,i) => `${X(yr(i)).toFixed(1)},${Yp(v).toFixed(1)}`).join(" ")}" style="fill:none;stroke:${s[2]};stroke-width:2"/>`).join("");
+    const dots = act.map(s => `<circle cx="${X(yr(idx))}" cy="${Yp(D[s[0]].y[idx])}" r="4.5" style="fill:${s[2]};stroke:var(--surface);stroke-width:2"/>`).join("");
+    el.querySelector(".hc-c").innerHTML = `<svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="${C.title}">
+      ${ticks.map(v => `<line x1="${L}" y1="${Yp(v)}" x2="${w-R}" y2="${Yp(v)}" style="stroke:${v === 0 ? "var(--muted)" : "var(--line)"};stroke-width:1"/><text x="${L-4}" y="${Yp(v)+4}" text-anchor="end" class="sm">${v}%</text>`).join("")}
+      ${[1960,1970,1980,1990,2000,2010].map(t => `<text x="${X(t)}" y="${h-8}" text-anchor="middle" class="sm">${t}</text>`).join("")}
+      <line x1="${X(yr(idx))}" y1="${T}" x2="${X(yr(idx))}" y2="${h-B}" style="stroke:var(--ink);stroke-width:1;stroke-dasharray:3 3"/>
+      ${lines}${dots}</svg>`;
+    el.querySelector(".hc-yv").textContent = Y0;
+    const val = k => D[k].y[idx];
+    let rows = C.ser.map(s => kv(s[1], val(s[0]).toFixed(1) + "% of GDP"));
+    if (key === "trade"){ const nx = val("EXP/Y") - val("IMP/Y"); rows.push(kv("Net exports (exports − imports)", `<span style="color:${nx < 0 ? "var(--wrong)" : "var(--right)"}">${nx > 0 ? "+" : ""}${nx.toFixed(1)}% of GDP</span>`)); }
+    else { const gap = val("S/Y") - val("I/Y"); rows.push(kv("Saving − investment", `<span style="color:${gap < 0 ? "var(--wrong)" : "var(--right)"}">${gap > 0 ? "+" : ""}${gap.toFixed(1)}% of GDP</span>`)); }
+    el.querySelector(".hc-v").innerHTML = rows.join("");
+  };
+  el.querySelectorAll(".chipbtn").forEach(b => b.onclick = () => { const k = b.dataset.s; if (on[k] && Object.values(on).filter(Boolean).length === 1) return; on[k] = !on[k]; b.setAttribute("aria-pressed", on[k]); draw(); });
+  sl.oninput = draw; draw();
+}
+
 /* ---------- lessons ---------- */
 const STEPS = [
  { title:"Open economies and net exports", html:`
@@ -215,7 +256,9 @@ const STEPS = [
    <div class="formula">Net exports (NX) = exports − imports</div>
    <div class="fig" data-fig="nx"></div>
    <p>Things that move NX: tastes for foreign vs domestic goods, prices at home and abroad, incomes at home and abroad, exchange rates, transportation costs, and government policies.</p>
-   <div class="fig" data-fig="nxev"></div>`,
+   <div class="fig" data-fig="nxev"></div>
+   <p>The U.S. economy has become much more open: exports and imports have grown as a share of GDP, and imports have outpaced exports since about 1980.</p>
+   <div class="fig" data-fig="histtrade"></div>`,
    check:[
     {id:"c1a", q:"A country exports $2 trillion and imports $2.5 trillion. It has…", a:1,
      o:[["A trade surplus of $0.5 trillion","A surplus means exports are bigger. Which is bigger here?"],["A trade deficit of $0.5 trillion","Correct. NX = 2 − 2.5 = −0.5."],["Balanced trade","That needs exports to equal imports."]],
@@ -259,6 +302,8 @@ const STEPS = [
    <p>A country’s saving can pay for investment at home <b>or</b> buy assets abroad.</p>
    <div class="fig" data-fig="si"></div>
    <h3>Case study: the U.S. trade deficit</h3>
+   <p>The lecture’s chart shows U.S. saving falling below investment from the 1980s on, with NCO turning negative.</p>
+   <div class="fig" data-fig="histsaving"></div>
    <div class="stack">
      <div class="info"><b>Why U.S. saving fell short</b><span>1980s and early 2000s: big government budget deficits and low private saving. 1990s: saving rose, but investment rose even faster in the tech boom.</span></div>
      <div class="info"><b>Is it a problem?</b><span>Not necessarily. Like a person, a country can borrow for good reasons (investment) or bad ones. A trade deficit may be a symptom of a problem rather than a problem itself.</span></div>
@@ -334,7 +379,7 @@ const STEPS = [
      hint:"Look back at the 31-country evidence.", more:"Over long periods, inflation differences show up in exchange rates."}
    ]}
 ];
-const FIGS = { nx:figNX, nxev:figNXEvents, nco:figNCO, identity:figIdentity, si:figSI, e:figE, real:figReal, arb:figArb, ppp:figPPP, tradable:figTradable };
+const FIGS = { histtrade:el => figHist(el,"trade"), histsaving:el => figHist(el,"saving"), nx:figNX, nxev:figNXEvents, nco:figNCO, identity:figIdentity, si:figSI, e:figE, real:figReal, arb:figArb, ppp:figPPP, tradable:figTradable };
 
 /* ---------- self-check ---------- */
 const QUIZ = [
