@@ -303,6 +303,76 @@ function figPredictAS(el){
   draw();
 }
 
+
+/* Lecture 10 upgrade: synchronized historical-series explorer. All plotted points
+   are taken from the original Lecture 10 series already in H10. */
+function figCycleCompare(el){
+  let mode='gdp';
+  const series={gdp:{label:'Real GDP',data:H10.gdp,unit:'billions of 2005 dollars'},inv:{label:'Real investment',data:H10.inv,unit:'billions of 2005 dollars'},u:{label:'Unemployment',data:H10.u,unit:'percent of labor force'}};
+  el.innerHTML=`<div class="figt">Explore the business cycle across three indicators</div>
+    <p class="figsub">Lecture slides 3–5 · The same recession periods on all three historical series. Change the window and inspect the corresponding values. Values come from the original slide datasets, not estimates from chart images.</p>
+    <div class="seg" role="group" aria-label="Historical indicator" style="grid-template-columns:repeat(3,1fr)">
+    <button type="button" data-k="gdp" aria-pressed="true" style="font-size:14px;padding:8px 4px">GDP</button><button type="button" data-k="inv" aria-pressed="false" style="font-size:14px;padding:8px 4px">Investment</button><button type="button" data-k="u" aria-pressed="false" style="font-size:14px;padding:8px 4px">Jobless rate</button></div>
+    <div class="cy-graph"></div>
+    <label for="cy-from">Starting year <b class="cy-from-val"></b></label><input id="cy-from" type="range" min="1965" max="2005" step="1" value="2000"/>
+    <label for="cy-to">Ending year <b class="cy-to-val"></b></label><input id="cy-to" type="range" min="1970" max="2011" step="1" value="2011"/>
+    <div class="cy-summary stack"></div><button type="button" class="btn ghost cy-export">Download all three historical series (CSV)</button>
+    <p class="cap">Historical and educational illustration, not a forecast. The shaded recession windows are provided by the lecture lab; recent recessions after 2011 are not included.</p>`;
+  const a=el.querySelector('#cy-from'),b=el.querySelector('#cy-to');
+  function draw(){
+    let start=+a.value,end=+b.value;if(end<=start+1){end=Math.min(2011,start+2);b.value=end;}
+    el.querySelector('.cy-from-val').textContent=start;
+    el.querySelector('.cy-to-val').textContent=end;
+    const d=series[mode].data, first=Math.max(0,Math.round((start-d.x0)/d.dx)),last=Math.min(d.y.length-1,Math.round((end-d.x0)/d.dx));
+    const values=d.y.slice(first,last+1),low=Math.min(...values),high=Math.max(...values),pad=Math.max((high-low)*.12,.1);
+    const span=high-low+2*pad, raw=span/4, mag=Math.pow(10,Math.floor(Math.log10(raw))), step=[1,2,2.5,5,10].map(m=>m*mag).find(v=>v>=raw), t0=Math.ceil((low-pad)/step)*step, tickvals=[];for(let v=t0;v<=high+pad+1e-9;v+=step)tickvals.push(Math.round(v*100)/100);
+    const ys=Math.max(1,Math.ceil((end-start)/4)), years=[];for(let y=start;y<=end-ys*0.6;y+=ys)years.push(y);
+    // lineChart's x0 is the start of its dataset, so pass a sliced series.
+    el.querySelector('.cy-graph').innerHTML=lineChart({x0:d.x0+first*d.dx,x1:d.x0+last*d.dx,dx:d.dx,y:values,y0:low-pad,y1:high+pad,ticks:tickvals,fmt:v=>mode==='u'?(+v.toFixed(1))+'%':(v>=1000?'$'+(+(v/1000).toFixed(1))+'T':'$'+Math.round(v)),xticks:years,recess:true,aria:series[mode].label+' during '+start+' to '+end});
+    const startVal=values[0],lastVal=values[values.length-1],delta=lastVal-startVal;
+    el.querySelector('.cy-summary').innerHTML=kv('Indicator',series[mode].label)+kv('Start',startVal.toLocaleString('en-US',{maximumFractionDigits:1})+' '+series[mode].unit)+kv('End',lastVal.toLocaleString('en-US',{maximumFractionDigits:1})+' '+series[mode].unit)+kv('Net change',(delta>=0?'+':'')+delta.toLocaleString('en-US',{maximumFractionDigits:1}));
+  }
+  el.querySelectorAll('[data-k]').forEach(btn=>btn.onclick=()=>{mode=btn.dataset.k;el.querySelectorAll('[data-k]').forEach(x=>x.setAttribute('aria-pressed',String(x===btn)));draw();});
+  a.addEventListener('input',draw);b.addEventListener('input',draw);
+  el.querySelector('.cy-export').onclick=()=>{
+    const rows=['Year,Quarter,Real GDP (billions 2005 USD),Real Investment (billions 2005 USD),Unemployment rate (%)'];
+    for(let i=0;i<H10.gdp.y.length;i++){let year=1965+Math.floor(i/4),quarter=i%4+1;rows.push([year,quarter,H10.gdp.y[i],H10.inv.y[i],H10.u.y[i]].join(','));}
+    const blob=new Blob([rows.join('\r\n')+'\r\n'],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='lecture10_historical_series_1965_2011.csv';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  };
+  draw();
+}
+function figADASDiagnostic(el){
+  let d=0,pe=100,yn=100;
+  el.innerHTML=`<div class="figt">Interactive AD–AS Shock Laboratory</div>
+    <p class="figsub">Drag the shifts to move the curves. See how the equilibrium price level and output respond together. This is a teaching model with index values, not observed economic data.</p>
+    <p class="small muted" style="margin:8px 0 4px">Try an example, or drag the sliders:</p><div class="seg" style="grid-template-columns:repeat(3,1fr)" role="group" aria-label="Apply an example shock"><button type="button" data-preset="demand">Demand ↓</button><button type="button" data-preset="oil">Oil shock</button><button type="button" data-preset="growth">Growth ↑</button></div>
+    <label for="adx">Aggregate demand shift: <b class="adxv">0</b></label><input id="adx" type="range" min="-25" max="25" value="0" step="1">
+    <label for="asx">Short-run supply cost / expected-price shift: <b class="asxv">0</b></label><input id="asx" type="range" min="-20" max="20" value="0" step="1">
+    <label for="lrx">Potential output (LRAS): <b class="lrxv">100</b></label><input id="lrx" type="range" min="85" max="115" value="100" step="1">
+    <div class="sc-chart"></div><div class="sc-readout stack"></div><p class="cap sc-text"></p>
+    <button class="btn ghost sc-reset" type="button">Reset all curves</button>`;
+  const sliders=[el.querySelector('#adx'),el.querySelector('#asx'),el.querySelector('#lrx')];
+  function render(){
+    d=+sliders[0].value;pe=100+(+sliders[1].value);yn=+sliders[2].value;
+    const eq=sr(d,pe,yn),baseline=sr(0,100,100);
+    const deltaY=eq.Y-baseline.Y,deltaP=eq.P-baseline.P;
+    el.querySelector('.adxv').textContent=(d>0?'+':'')+d;
+    el.querySelector('.asxv').textContent=(pe-100>0?'+':'')+(pe-100);
+    el.querySelector('.lrxv').textContent=yn;
+    el.querySelector('.sc-chart').innerHTML=adas({ad:[{d:0,label:'AD₀',faded:d!==0},{d,label:'AD₁'}],sras:[{PE:100,YN:100,label:'SRAS₀',faded:pe!==100||yn!==100},{PE:pe,YN:yn,label:'SRAS₁'}],lras:[{Y:100,label:'LRAS₀',faded:yn!==100},{Y:yn,label:'LRAS₁'}],pts:[{...baseline,label:'A',old:true},{...eq,label:'B'}]});
+    el.querySelector('.sc-readout').innerHTML=kv('New short-run output index',eq.Y.toFixed(1))+kv('New short-run price index',eq.P.toFixed(1))+kv('Output vs. initial',(deltaY>=0?'+':'')+deltaY.toFixed(1))+kv('Prices vs. initial',(deltaP>=0?'+':'')+deltaP.toFixed(1));
+    let explanation=d===0&&pe===100&&yn===100?'Baseline: the three curves intersect at the long-run equilibrium, with price level 100 and output 100.':`Compared with the baseline, output ${deltaY>0.05?'rises':deltaY<-.05?'falls':'stays approximately unchanged'} and the price level ${deltaP>.05?'rises':deltaP<-.05?'falls':'stays approximately unchanged'}.`;
+    explanation+=' AD changes aggregate spending; SRAS cost/expectations shifts change short-run production incentives; LRAS marks potential output. Changes in potential output also shift the modeled short-run supply relation.';
+    el.querySelector('.sc-text').textContent=explanation;
+  }
+  sliders.forEach(x=>x.addEventListener('input',render));
+  el.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>{
+    const val={demand:[-18,0,100],oil:[0,18,100],growth:[0,0,112]}[b.dataset.preset];sliders.forEach((el,i)=>el.value=val[i]);render();
+  }));
+  el.querySelector('.sc-reset').onclick=()=>{sliders.forEach((x,i)=>x.value=[0,0,100][i]);render();};
+  render();
+}
+
 /* ---------- lessons ---------- */
 const STEPS = [
  { title:"Short-run economic fluctuations", html:`
@@ -313,6 +383,7 @@ const STEPS = [
    </div>
    <p>Short-run fluctuations are often called ${g("Business cycle","business cycles")}.</p>
    <div class="fig" data-fig="fluct"></div>
+   <div class="fig" data-fig="cyclecompare"></div>
    ${tn("Long-run growth of about 3% a year; data run to 2011.","U.S. growth has averaged closer to 2% a year in recent decades. Since 2011 there was one more recession: a short, very deep one in 2020, when unemployment briefly passed 14%.")}`,
    check:[
     {id:"c1a", q:"Which is NOT one of the three facts about economic fluctuations?", a:2,
@@ -418,6 +489,7 @@ const STEPS = [
      <div class="info"><b>${g("Four steps","The four steps")}</b><span>1. Does the event shift AD or AS? 2. Left or right? 3. Short-run effect on P and Y. 4. How the economy moves to the new long run.</span></div>
    </div>
    <div class="fig" data-fig="adshock"></div>
+   <div class="fig" data-fig="shockcompare"></div>
    <div class="fig" data-fig="bigshifts"></div>
    <h3>Case study: the 2008–2009 recession</h3>
    <p>From December 2007 to June 2009, real GDP fell about 4%. Unemployment rose from 4.4% (May 2007) to 10.1% (October 2009). Housing was at the center.</p>
@@ -450,7 +522,7 @@ function figIntro(el){
   el.innerHTML = `<div class="figt">The model of aggregate demand and aggregate supply</div>` + adas({ad:[{d:0, label:"AD"}], sras:[{PE:100, label:"SRAS"}], pts:[{Y:100, P:100, label:"equilibrium"}]}) +
     `<p class="cap">Where AD (aggregate demand) crosses SRAS (short-run aggregate supply), we get the equilibrium price level and real GDP.</p>`;
 }
-const FIGS = { fluct:figFluct, intro:figIntro, adslope:figADSlope, adsort:figADSort, lrassort:figLRASSort, growth:figGrowth, slope:figSlopeMatters, srascalc:figSRASCalc, pe:figPE, adshock:figADShock, bigshifts:figBigShifts, housing:figHousing, oil:figOil, oiltable:figOilTable, predict:figPredictAS };
+const FIGS = { cyclecompare:figCycleCompare, shockcompare:figADASDiagnostic, fluct:figFluct, intro:figIntro, adslope:figADSlope, adsort:figADSort, lrassort:figLRASSort, growth:figGrowth, slope:figSlopeMatters, srascalc:figSRASCalc, pe:figPE, adshock:figADShock, bigshifts:figBigShifts, housing:figHousing, oil:figOil, oiltable:figOilTable, predict:figPredictAS };
 
 /* ---------- self-check ---------- */
 const QUIZ = [
